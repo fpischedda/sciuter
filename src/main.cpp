@@ -33,6 +33,16 @@ SDL_Surface* optimize_surface(SDL_Surface* surface, SDL_PixelFormat* format)
 
 void main_loop(SDL_Window* window)
 {
+    bool quit = false;
+    SDL_Event e;
+    while( SDL_PollEvent( &e ) != 0 )
+    {
+        //User requests quit
+        if( e.type == SDL_QUIT )
+        {
+            quit = true;
+        }
+    }
 }
 
 SDL_Window* init()
