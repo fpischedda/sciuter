@@ -8,18 +8,7 @@
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
-SDL_Surface* load_surface(const std::string path)
-{
-    //Load image at specified path
-    SDL_Surface* surface = IMG_Load( path.c_str() );
-    if( nullptr == surface)
-    {
-        printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
-    }
-    return surface;
-}
-
-SDL_Surface* optimize_surface(SDL_Surface* surface, SDL_PixelFormat* format)
+SDL_Surface* optimize_surface(SDL_Surface* surface, const SDL_PixelFormat* format)
 {
     //Convert surface to screen format
     SDL_Surface* optimized = SDL_ConvertSurface( surface, format, 0 );
@@ -31,18 +20,52 @@ SDL_Surface* optimize_surface(SDL_Surface* surface, SDL_PixelFormat* format)
     return optimized;
 }
 
+SDL_Surface* load_surface(const std::string path, const SDL_PixelFormat* format=nullptr)
+{
+    //Load image at specified path
+    SDL_Surface* surface = IMG_Load( path.c_str() );
+    if( nullptr == surface)
+    {
+        printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
+    }
+
+    if( nullptr != format )
+    {
+        SDL_Surface* optimized = optimize_surface(surface, format);
+        SDL_FreeSurface(surface);
+        return optimized;
+    }
+
+    return surface;
+}
+
 void main_loop(SDL_Window* window)
 {
     bool quit = false;
     SDL_Event e;
-    while( SDL_PollEvent( &e ) != 0 )
+    SDL_Surface* screen_surface = SDL_GetWindowSurface(window);
+    SDL_Surface* background = load_surface("resources/images/background.png", screen_surface->format);
+
+    while( !quit )
     {
-        //User requests quit
-        if( e.type == SDL_QUIT )
+        if( SDL_PollEvent( &e ) != 0 )
         {
-            quit = true;
+            //User requests quit
+            switch( e.type)
+            {
+                case SDL_QUIT:
+                    quit = true;
+                    break;
+                case SDL_KEYDOWN:
+                    quit = true;
+                    break;
+            }
         }
+
+        SDL_BlitSurface(background, nullptr, screen_surface, nullptr);
+        SDL_UpdateWindowSurface( window );
     }
+    SDL_FreeSurface(background);
 }
 
 SDL_Window* init()
