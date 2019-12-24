@@ -1,7 +1,7 @@
 CXX=g++
-CXX_FLAGS="-c -Wall -std=c++17"
+CXX_FLAGS="-c -Wall -std=c++17 -I include"
 LD_FLAGS="-lSDL2 -lSDL2_image"
-SRC="src/main.cpp src/sdl.cpp"
+SRC="src/main.cpp src/sdl.cpp src/animation.cpp"
 OBJS="main.o sdl.o"
 
 redo-ifchange $SRC
