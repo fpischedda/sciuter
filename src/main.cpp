@@ -3,7 +3,8 @@
 #include <string>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "sdl.hpp"
+#include <sciuter/animation.hpp>
+#include <sciuter/sdl.hpp>
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
@@ -11,6 +12,7 @@ const int SCREEN_HEIGHT = 480;
 
 void main_loop(SDL_Window* window)
 {
+    AnimationMap animations = TexturePackerAnimationLoader::load("resources/images/player.json");
     bool quit = false;
     SDL_Event e;
 
