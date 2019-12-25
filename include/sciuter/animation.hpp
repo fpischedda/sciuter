@@ -18,6 +18,7 @@ class Animation
             : m_frames(frames), m_name(name){}
 
         const std::vector<SDL_Rect>& get_frames() { return m_frames; } 
+        const int get_frame_count() { return m_frames.size(); } 
 };
 
 typedef std::map<std::string, Animation> AnimationMap;
