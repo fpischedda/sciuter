@@ -16,6 +16,7 @@ namespace components
     {
         float dx;
         float dy;
+        float speed;
     };
 
     struct animation
@@ -52,6 +53,20 @@ namespace components
         {
             return animation_data->get_frames()[frame_index];
         };
+    };
+
+    struct source_rect
+    {
+        SDL_Rect rect;
+
+        static const SDL_Rect from_texture(SDL_Texture* texture)
+        {
+            Uint32 format;
+            int access, width, height;
+            SDL_QueryTexture(texture, &format, &access, &width, &height);
+            const SDL_Rect rect = {0, 0, width, height};
+            return rect;
+        }
     };
 
     struct image

@@ -7,6 +7,10 @@
 
 typedef std::map<std::string, SDL_Texture*> ResourceMap;
 
+/**
+ * A pretty dumb resource manager, right now used only to load, store
+ * and cleanup textures
+ */
 class Resources
 {
     private:
