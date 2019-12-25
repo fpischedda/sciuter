@@ -1,4 +1,4 @@
 *.o
-sciuter
+./sciuter
 .redo
 .ccls-cache
