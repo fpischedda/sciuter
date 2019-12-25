@@ -10,7 +10,7 @@ void sdl_quit(SDL_Window* window);
 
 SDL_Surface* optimize_surface(SDL_Surface* surface, const SDL_PixelFormat* format);
 
-SDL_Surface* load_surface(const std::string path, const SDL_PixelFormat* format=nullptr);
+SDL_Surface* load_surface(const std::string& path, const SDL_PixelFormat* format=nullptr);
 
 SDL_Texture* load_texture( const std::string path, SDL_Renderer* renderer );
 

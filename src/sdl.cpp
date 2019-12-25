@@ -58,7 +58,7 @@ SDL_Surface* optimize_surface(SDL_Surface* surface, const SDL_PixelFormat* forma
     return optimized;
 }
 
-SDL_Surface* load_surface(const std::string path, const SDL_PixelFormat* format=nullptr)
+SDL_Surface* load_surface(const std::string& path, const SDL_PixelFormat* format)
 {
     //Load image at specified path
     SDL_Surface* surface = IMG_Load( path.c_str() );
