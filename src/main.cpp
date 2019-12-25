@@ -4,6 +4,7 @@
 #include <sciuter/sdl.hpp>
 #include <sciuter/components.hpp>
 #include <sciuter/animation.hpp>
+#include <sciuter/resources.hpp>
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
@@ -49,6 +50,7 @@ void render_animated_sprites(SDL_Renderer* renderer, entt::registry& registry)
 
 void main_loop(SDL_Window* window)
 {
+    Resources resources;
     bool quit = false;
     SDL_Event e;
 
@@ -63,15 +65,27 @@ void main_loop(SDL_Window* window)
     //Initialize renderer color
     SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
 
-    SDL_Texture* background = load_texture("resources/images/background.png", renderer);
-    SDL_Texture* player_texture = load_texture("resources/images/player.png", renderer);
+    resources.load("resources/images/background.png", renderer);
+    resources.load("resources/images/player.png", renderer);
+
+    SDL_Texture* background = resources.get("resources/images/background.png");
     AnimationMap animations = TexturePackerAnimationLoader::load("resources/images/player.json");
 
     entt::registry registry;
+
     auto player_entity = registry.create();
     registry.assign<components::position>(player_entity, 100.f, 100.f);
     registry.assign<components::animation>(player_entity, &animations["player"], .3f);
-    registry.assign<components::image>(player_entity, player_texture);
+    registry.assign<components::image>(
+            player_entity,
+            resources.get("resources/images/player.png"));
+
+    auto enemy = registry.create();
+    registry.assign<components::position>(enemy, 300.f, 300.f);
+    registry.assign<components::animation>(enemy, &animations["player"], .2f);
+    registry.assign<components::image>(
+            enemy,
+            resources.get("resources/images/player.png"));
 
     while( !quit )
     {
@@ -101,8 +115,6 @@ void main_loop(SDL_Window* window)
         //Update screen
         SDL_RenderPresent( renderer );
     }
-    SDL_DestroyTexture(background);
-    SDL_DestroyTexture(player_texture);
     SDL_DestroyRenderer( renderer );
 }
 
