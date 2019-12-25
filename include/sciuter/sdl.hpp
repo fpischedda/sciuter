@@ -1,3 +1,6 @@
+#ifndef __SCIUTERR__SDL_HPP__
+#define __SCIUTERR__SDL_HPP__
+
 #include <stdio.h>
 #include <string>
 #include <SDL2/SDL.h>
@@ -8,3 +11,5 @@ SDL_Surface* optimize_surface(SDL_Surface* surface, const SDL_PixelFormat* forma
 SDL_Surface* load_surface(const std::string path, const SDL_PixelFormat* format=nullptr);
 
 SDL_Texture* load_texture( const std::string path, SDL_Renderer* renderer );
+
+#endif
