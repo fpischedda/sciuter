@@ -1,10 +1,8 @@
 //Using SDL and standard IO
 #include <stdio.h>
 #include <string>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <sciuter/animation.hpp>
 #include <sciuter/sdl.hpp>
+#include <sciuter/animation.hpp>
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
@@ -58,55 +56,17 @@ void main_loop(SDL_Window* window)
     SDL_DestroyRenderer( renderer );
 }
 
-SDL_Window* init()
-{
-    //Initialize SDL
-    if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
-    {
-        printf("SDL could not initialize! SDL_Error: %s\n",
-                SDL_GetError());
-        return nullptr;
-    }
-
-    if(! IMG_Init(IMG_INIT_PNG))
-    {
-        printf("SDL_Image could not initialize! SDL_Error: %s\n",
-                IMG_GetError());
-        return nullptr;
-    }
-
-    //Create window
-    SDL_Window* window = SDL_CreateWindow(
-            "SDL Tutorial",
-            SDL_WINDOWPOS_UNDEFINED,
-            SDL_WINDOWPOS_UNDEFINED,
-            SCREEN_WIDTH,
-            SCREEN_HEIGHT,
-            SDL_WINDOW_SHOWN);
-
-    if( nullptr == window)
-    {
-        printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
-    }
-
-    return window;
-}
-
 int main( int argc, char* args[] )
 {
-    SDL_Window* window = init();
+    SDL_Window* window = sdl_init(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     if( NULL != window)
     {
         main_loop(window);
-
-        //Destroy window
-        SDL_DestroyWindow( window );
     }
 
     //Quit SDL subsystems
-    IMG_Quit();
-    SDL_Quit();
+    sdl_quit(window);
 
     return 0;
 }

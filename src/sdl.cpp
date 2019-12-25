@@ -1,7 +1,50 @@
 #include <stdio.h>
 #include <string>
-#include <SDL2/SDL.h>
+#include <sciuter/sdl.hpp>
 #include <SDL2/SDL_image.h>
+
+SDL_Window* sdl_init(const int screen_width, const int screen_height)
+{
+    //Initialize SDL
+    if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
+    {
+        printf("SDL could not initialize! SDL_Error: %s\n",
+                SDL_GetError());
+        return nullptr;
+    }
+
+    if(! IMG_Init(IMG_INIT_PNG))
+    {
+        printf("SDL_Image could not initialize! SDL_Error: %s\n",
+                IMG_GetError());
+        return nullptr;
+    }
+
+    //Create window
+    SDL_Window* window = SDL_CreateWindow(
+            "SDL Tutorial",
+            SDL_WINDOWPOS_UNDEFINED,
+            SDL_WINDOWPOS_UNDEFINED,
+            screen_width,
+            screen_height,
+            SDL_WINDOW_SHOWN);
+
+    if( nullptr == window)
+    {
+        printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
+    }
+
+    return window;
+}
+
+void sdl_quit(SDL_Window* window)
+{
+    //Destroy window
+    SDL_DestroyWindow( window );
+
+    IMG_Quit();
+    SDL_Quit();
+}
 
 SDL_Surface* optimize_surface(SDL_Surface* surface, const SDL_PixelFormat* format)
 {
@@ -60,4 +103,3 @@ SDL_Texture* load_texture( const std::string path, SDL_Renderer* renderer )
 
     return texture;
 }
-

@@ -1,10 +1,12 @@
 #ifndef __SCIUTERR__SDL_HPP__
 #define __SCIUTERR__SDL_HPP__
 
-#include <stdio.h>
 #include <string>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+
+SDL_Window* sdl_init(const int screen_width, const int screen_height);
+
+void sdl_quit(SDL_Window* window);
 
 SDL_Surface* optimize_surface(SDL_Surface* surface, const SDL_PixelFormat* format);
 
