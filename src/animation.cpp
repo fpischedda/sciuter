@@ -21,7 +21,7 @@ AnimationMap TexturePackerAnimationLoader::load(std::istream &input)
         auto& source_frame = frame["frame"];
         SDL_Rect rect = {
             source_frame["x"], source_frame["y"],
-            source_frame["x"], source_frame["y"]};
+            source_frame["w"], source_frame["h"]};
 
         all_frames[frame_name] = rect;
     }
