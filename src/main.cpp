@@ -152,7 +152,7 @@ void main_loop(SDL_Window* window)
     SDL_Rect screen_rect = {0, 0, 640, 480};
     while( !quit )
     {
-        if( SDL_PollEvent( &e ) != 0 )
+        while( SDL_PollEvent( &e ) != 0 )
         {
             //User requests quit
             switch( e.type)
