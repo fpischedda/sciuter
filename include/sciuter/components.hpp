@@ -69,6 +69,11 @@ namespace components
         }
     };
 
+    struct screen_boundaries
+    {
+        SDL_Rect rect;
+    };
+
     struct image
     {
         SDL_Texture* texture;

@@ -49,6 +49,26 @@ void update_linear_velocity(float dt, entt::registry& registry)
     }
 }
 
+void check_boundaries(entt::registry& registry)
+{
+    auto view = registry.view<
+        components::position,
+        components::source_rect,
+        components::screen_boundaries>();
+
+    for(auto entity: view) {
+        auto &position = view.get<components::position>(entity);
+        auto &frame_rect = view.get<components::source_rect>(entity);
+        auto &boundaries = view.get<components::screen_boundaries>(entity);
+
+        SDL_Rect dest_rect = center_position(position.x, position.y, frame_rect.rect);
+        if(!SDL_HasIntersection(&dest_rect, &boundaries.rect))
+        {
+            registry.destroy(entity);
+        }
+    }
+}
+
 void render_sprites(SDL_Renderer* renderer, entt::registry& registry)
 {
     auto view = registry.view<
@@ -66,7 +86,9 @@ void render_sprites(SDL_Renderer* renderer, entt::registry& registry)
     }
 }
 
-entt::entity spawn_bullet(const float x, const float y,
+entt::entity spawn_bullet(
+        const float x, const float y,
+        const SDL_Rect& boundaries,
         Resources& resources,
         entt::registry& registry)
 {
@@ -76,7 +98,8 @@ entt::entity spawn_bullet(const float x, const float y,
     registry.assign<components::source_rect>(
             bullet,
             components::source_rect::from_texture(texture));
-    registry.assign<components::velocity>(bullet, 0.f, 1.f, 50.f);
+    registry.assign<components::velocity>(bullet, 0.f, -1.f, 100.f);
+    registry.assign<components::screen_boundaries>(bullet, boundaries);
     registry.assign<components::image>(
             bullet,
             texture);
@@ -85,6 +108,7 @@ entt::entity spawn_bullet(const float x, const float y,
 
 void main_loop(SDL_Window* window)
 {
+    unsigned int old_time = SDL_GetTicks();
     Resources resources;
     bool quit = false;
     SDL_Event e;
@@ -112,7 +136,7 @@ void main_loop(SDL_Window* window)
     auto player_entity = registry.create();
     registry.assign<components::position>(player_entity, 100.f, 100.f);
     registry.assign<components::source_rect>(player_entity);
-    registry.assign<components::animation>(player_entity, &animations["player"], .3f);
+    registry.assign<components::animation>(player_entity, &animations["player"], .6f);
     registry.assign<components::image>(
             player_entity,
             resources.get("resources/images/player.png"));
@@ -120,11 +144,12 @@ void main_loop(SDL_Window* window)
     auto enemy = registry.create();
     registry.assign<components::position>(enemy, 300.f, 300.f);
     registry.assign<components::source_rect>(enemy);
-    registry.assign<components::animation>(enemy, &animations["player"], .2f);
+    registry.assign<components::animation>(enemy, &animations["player"], .5f);
     registry.assign<components::image>(
             enemy,
             resources.get("resources/images/player.png"));
 
+    SDL_Rect screen_rect = {0, 0, 640, 480};
     while( !quit )
     {
         if( SDL_PollEvent( &e ) != 0 )
@@ -139,7 +164,8 @@ void main_loop(SDL_Window* window)
                     switch(e.key.keysym.sym)
                     {
                         case SDLK_z:
-                            spawn_bullet(300.f, 300.f, resources, registry);
+                            spawn_bullet(300.f, 300.f,
+                                    screen_rect, resources, registry);
                             break;
                         default:
                             quit = true;
@@ -149,8 +175,14 @@ void main_loop(SDL_Window* window)
             }
         }
 
-        update_animation(16.f / 1000.f, registry);
-        update_linear_velocity(16.f / 1000.f, registry);
+        unsigned int now_time = SDL_GetTicks();
+        float dt = (now_time - old_time) * 0.001f;
+        old_time = now_time;
+
+        update_animation(dt, registry);
+        update_linear_velocity(dt, registry);
+        check_boundaries(registry);
+
         //Clear screen
         SDL_RenderClear( renderer );
 
