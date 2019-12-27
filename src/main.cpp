@@ -10,6 +10,67 @@
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
+
+entt::entity spawn_bullet(
+        const float x, const float y,
+        const SDL_Rect& boundaries,
+        Resources& resources,
+        entt::registry& registry);
+
+void handle_gamepad(
+        SDL_Rect& boundaries,
+        Resources& resources,
+        entt::registry& registry)
+{
+    auto view = registry.view<
+        components::position,
+        components::velocity,
+        components::gamepad>();
+
+    for(auto entity: view) {
+        auto &position = view.get<components::position>(entity);
+        auto &velocity = view.get<components::velocity>(entity);
+        auto &gamepad = view.get<components::gamepad>(entity);
+
+        gamepad.update();
+
+        if(gamepad.down("move_left"))
+        {
+            velocity.dx = -1;
+        }
+        else if(gamepad.down("move_right"))
+        {
+            velocity.dx = 1;
+        }
+        else
+        {
+            velocity.dx = 0;
+        }
+
+        if(gamepad.down("move_up"))
+        {
+            velocity.dy = -1;
+        }
+        else if(gamepad.down("move_down"))
+        {
+            velocity.dy = 1;
+        }
+        else
+        {
+            velocity.dy = 0;
+        }
+
+        velocity.normalize();
+
+        if(gamepad.pressed("fire"))
+        {
+            spawn_bullet(
+                    position.x, position.y,
+                    boundaries, resources, registry);
+        }
+    }
+}
+
 SDL_Rect center_position(const int x, const int y, const SDL_Rect& frame_rect)
 {
     SDL_Rect position =
@@ -133,13 +194,25 @@ void main_loop(SDL_Window* window)
 
     entt::registry registry;
 
+    const components::KeyActionMap key_map = {
+        {SDL_SCANCODE_LEFT, "move_left"},
+        {SDL_SCANCODE_RIGHT, "move_right"},
+        {SDL_SCANCODE_UP, "move_up"},
+        {SDL_SCANCODE_DOWN, "move_down"},
+        {SDL_SCANCODE_Z, "fire"}
+    };
+
     auto player_entity = registry.create();
     registry.assign<components::position>(player_entity, 100.f, 100.f);
+    registry.assign<components::velocity>(player_entity, 0.f, 0.f, 150.f);
     registry.assign<components::source_rect>(player_entity);
     registry.assign<components::animation>(player_entity, &animations["player"], .6f);
     registry.assign<components::image>(
             player_entity,
             resources.get("resources/images/player.png"));
+    registry.assign<components::gamepad>(
+            player_entity,
+            key_map);
 
     auto enemy = registry.create();
     registry.assign<components::position>(enemy, 300.f, 300.f);
@@ -163,11 +236,8 @@ void main_loop(SDL_Window* window)
                 case SDL_KEYDOWN:
                     switch(e.key.keysym.sym)
                     {
-                        case SDLK_z:
-                            spawn_bullet(300.f, 300.f,
-                                    screen_rect, resources, registry);
-                            break;
-                        default:
+                        case SDLK_ESCAPE:
+                        case SDLK_q:
                             quit = true;
                             break;
                     }
@@ -178,6 +248,9 @@ void main_loop(SDL_Window* window)
         unsigned int now_time = SDL_GetTicks();
         float dt = (now_time - old_time) * 0.001f;
         old_time = now_time;
+
+
+        handle_gamepad(screen_rect, resources, registry);
 
         update_animation(dt, registry);
         update_linear_velocity(dt, registry);

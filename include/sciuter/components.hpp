@@ -1,6 +1,9 @@
 #ifndef __SCIUTER_COMPONENTS_HPP__
 #define __SCIUTER_COMPONENTS_HPP__
 
+#include <map>
+#include <math.h>
+#include <vector>
 #include <entt/entt.hpp>
 #include <sciuter/animation.hpp>
 
@@ -17,6 +20,16 @@ namespace components
         float dx;
         float dy;
         float speed;
+
+        void normalize()
+        {
+            float len = sqrt(dx * dx + dy * dy);
+            if(len != 0)
+            {
+                dx /= len;
+                dy /= len;
+            }
+        }
     };
 
     struct animation
@@ -77,6 +90,64 @@ namespace components
     struct image
     {
         SDL_Texture* texture;
+    };
+
+    typedef std::map<Uint8, std::string> KeyActionMap;
+    typedef std::map<std::string, Uint8> ActionStatusMap;
+
+    struct gamepad
+    {
+        KeyActionMap key_action_mapping;
+        ActionStatusMap previous_status;
+        ActionStatusMap current_status;
+
+        gamepad(const KeyActionMap& _key_action_mapping)
+            : key_action_mapping(_key_action_mapping)
+        {
+            for(auto& [_key, val] : _key_action_mapping)
+            {
+                previous_status[val] = 0;
+                current_status[val] = 0;
+            }
+        }
+
+        void update()
+        {
+            SDL_PumpEvents();
+            const Uint8* keys = SDL_GetKeyboardState(NULL);
+            // keep track of previos status
+            for(auto& [key, val] : current_status)
+            {
+                previous_status[key] = val;
+            }
+
+            for(auto& [key, val] : key_action_mapping)
+            {
+                current_status[val] = keys[key];
+            }
+        }
+
+        bool down(const std::string& action)
+        {
+            return current_status[action] == 1;
+        }
+
+        bool up(const std::string& action)
+        {
+            return current_status[action] == 1;
+        }
+
+        bool pressed(const std::string& action)
+        {
+            return (current_status[action] == 1 &&
+                    previous_status[action] == 0);
+        }
+
+        bool released(const std::string& action)
+        {
+            return (current_status[action] == 0 &&
+                    previous_status[action] == 1);
+        }
     };
 } //components
 
