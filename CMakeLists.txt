@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # define sources and include directories
-list(APPEND SOURCES src/main.cpp src/animation.cpp src/sdl.cpp)
+list(APPEND SOURCES src/main.cpp src/animation.cpp src/sdl.cpp src/systems.cpp)
 list(APPEND INCLUDES "${PROJECT_SOURCE_DIR}/include")
 
 # add the executable
