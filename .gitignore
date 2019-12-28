@@ -1,4 +1,5 @@
 *.o
 ./sciuter
 .redo
+./build/
 .ccls-cache

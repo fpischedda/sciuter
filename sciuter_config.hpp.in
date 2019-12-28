@@ -1,0 +1,3 @@
+// the configured options and settings for sciuter
+#define sciuter_VERSION_MAJOR @sciuter_VERSION_MAJOR@
+#define sciuter_VERSION_MINOR @sciuter_VERSION_MINOR@
