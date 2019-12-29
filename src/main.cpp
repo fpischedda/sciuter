@@ -16,6 +16,53 @@ const int SCREEN_HEIGHT = 480;
 
 using namespace std;
 
+void create_player_entity(
+        AnimationMap& animations,
+        Resources& resources, entt::registry& registry)
+{
+    // KeyActionMap holds an association between "low level" key code
+    // to high level action which is represented by a string
+    // the action could be a more efficient compile time hashed string but
+    // for now a plain old string is enough
+    const components::KeyActionMap key_map = {
+        {SDL_SCANCODE_LEFT, "move_left"},
+        {SDL_SCANCODE_RIGHT, "move_right"},
+        {SDL_SCANCODE_UP, "move_up"},
+        {SDL_SCANCODE_DOWN, "move_down"},
+        {SDL_SCANCODE_Z, "fire"}
+    };
+
+    auto entity = registry.create();
+    registry.assign<components::position>(entity, 100.f, 300.f);
+    registry.assign<components::velocity>(entity, 0.f, 0.f, 150.f);
+    registry.assign<components::source_rect>(entity);
+    registry.assign<components::destination_rect>(entity);
+    registry.assign<components::animation>(entity, &animations["player"], .6f);
+    registry.assign<components::image>(
+            entity,
+            resources.get("resources/images/player.png"));
+    registry.assign<components::gamepad>(
+            entity,
+            key_map);
+}
+
+void create_enemy_entity(
+        const float x, const float y,
+        AnimationMap& animations,
+        Resources& resources, entt::registry& registry)
+{
+
+    auto enemy = registry.create();
+    registry.assign<components::position>(enemy, x, y);
+    registry.assign<components::source_rect>(enemy);
+    registry.assign<components::destination_rect>(enemy);
+    registry.assign<components::energy>(enemy, 100);
+    registry.assign<components::animation>(enemy, &animations["ufo"], .5f);
+    registry.assign<components::image>(
+            enemy,
+            resources.get("resources/images/ufo.png"));
+}
+
 void main_loop(SDL_Window* window)
 {
     unsigned int old_time = SDL_GetTicks();
@@ -36,43 +83,23 @@ void main_loop(SDL_Window* window)
 
     resources.load("resources/images/background.png", renderer);
     resources.load("resources/images/player.png", renderer);
+    resources.load("resources/images/ufo.png", renderer);
     resources.load("resources/images/bullet.png", renderer);
 
     SDL_Texture* background = resources.get("resources/images/background.png");
-    AnimationMap animations = TexturePackerAnimationLoader::load("resources/images/player.json");
 
     entt::registry registry;
 
-    const components::KeyActionMap key_map = {
-        {SDL_SCANCODE_LEFT, "move_left"},
-        {SDL_SCANCODE_RIGHT, "move_right"},
-        {SDL_SCANCODE_UP, "move_up"},
-        {SDL_SCANCODE_DOWN, "move_down"},
-        {SDL_SCANCODE_Z, "fire"}
-    };
+    AnimationMap player_animations = TexturePackerAnimationLoader::load(
+            "resources/images/player.json");
+    create_player_entity(player_animations, resources, registry);
 
-    auto player_entity = registry.create();
-    registry.assign<components::position>(player_entity, 100.f, 300.f);
-    registry.assign<components::velocity>(player_entity, 0.f, 0.f, 150.f);
-    registry.assign<components::source_rect>(player_entity);
-    registry.assign<components::destination_rect>(player_entity);
-    registry.assign<components::animation>(player_entity, &animations["player"], .6f);
-    registry.assign<components::image>(
-            player_entity,
-            resources.get("resources/images/player.png"));
-    registry.assign<components::gamepad>(
-            player_entity,
-            key_map);
-
-    auto enemy = registry.create();
-    registry.assign<components::position>(enemy, 300.f, 100.f);
-    registry.assign<components::source_rect>(enemy);
-    registry.assign<components::destination_rect>(enemy);
-    registry.assign<components::energy>(enemy, 100);
-    registry.assign<components::animation>(enemy, &animations["player"], .5f);
-    registry.assign<components::image>(
-            enemy,
-            resources.get("resources/images/player.png"));
+    AnimationMap enemy_animations = TexturePackerAnimationLoader::load(
+            "resources/images/ufo.json");
+    create_enemy_entity(200.f, 50.f, enemy_animations, resources, registry);
+    create_enemy_entity(300.f, 100.f, enemy_animations, resources, registry);
+    create_enemy_entity(100.f, 180.f, enemy_animations, resources, registry);
+    create_enemy_entity(500.f, 80.f, enemy_animations, resources, registry);
 
     SDL_Rect screen_rect = {0, 0, 640, 480};
     while( !quit )
