@@ -82,6 +82,11 @@ namespace components
         }
     };
 
+    struct destination_rect
+    {
+        SDL_Rect rect;
+    };
+
     struct screen_boundaries
     {
         SDL_Rect rect;
@@ -148,6 +153,16 @@ namespace components
             return (current_status[action] == 0 &&
                     previous_status[action] == 1);
         }
+    };
+
+    struct energy
+    {
+        int value;
+    };
+
+    struct damage
+    {
+        int value;
     };
 } //components
 

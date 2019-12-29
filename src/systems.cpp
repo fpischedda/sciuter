@@ -93,22 +93,66 @@ void update_linear_velocity(float dt, entt::registry& registry)
     }
 }
 
-void check_boundaries(entt::registry& registry)
+void update_destination_rect(entt::registry& registry)
 {
     auto view = registry.view<
         components::position,
         components::source_rect,
-        components::screen_boundaries>();
+        components::destination_rect>();
 
     for(auto entity: view) {
         auto &position = view.get<components::position>(entity);
         auto &frame_rect = view.get<components::source_rect>(entity);
+        auto &dest = view.get<components::destination_rect>(entity);
+
+        dest.rect = center_position(position.x, position.y, frame_rect.rect);
+    }
+}
+
+void check_boundaries(entt::registry& registry)
+{
+    auto view = registry.view<
+        components::destination_rect,
+        components::screen_boundaries>();
+
+    for(auto entity: view) {
+        auto &dest_rect = view.get<components::destination_rect>(entity);
         auto &boundaries = view.get<components::screen_boundaries>(entity);
 
-        SDL_Rect dest_rect = center_position(position.x, position.y, frame_rect.rect);
-        if(!SDL_HasIntersection(&dest_rect, &boundaries.rect))
+        if(!SDL_HasIntersection(&dest_rect.rect, &boundaries.rect))
         {
             registry.destroy(entity);
+        }
+    }
+}
+
+void resolve_collisions(entt::registry& registry)
+{
+    auto view_bullets = registry.view<
+        components::destination_rect,
+        components::damage>();
+    auto view_enemies = registry.view<
+        components::destination_rect,
+        components::energy>();
+
+    for(auto bullet: view_bullets) {
+        auto &bullet_rect = view_bullets.get<components::destination_rect>(bullet);
+        auto &damage = view_bullets.get<components::damage>(bullet);
+
+        for(auto enemy: view_enemies) {
+            auto &enemy_rect = view_enemies.get<components::destination_rect>(enemy);
+            auto &energy = view_enemies.get<components::energy>(enemy);
+
+            if(SDL_HasIntersection(&bullet_rect.rect, &enemy_rect.rect))
+            {
+                registry.destroy(bullet);
+                energy.value -= damage.value;
+
+                if(energy.value <= 0)
+                {
+                    registry.destroy(enemy);
+                }
+            }
         }
     }
 }
@@ -116,17 +160,18 @@ void check_boundaries(entt::registry& registry)
 void render_sprites(SDL_Renderer* renderer, entt::registry& registry)
 {
     auto view = registry.view<
-        components::position,
         components::image,
-        components::source_rect>();
+        components::source_rect,
+        components::destination_rect>();
 
     for(auto entity: view) {
-        auto &position = view.get<components::position>(entity);
         auto &image = view.get<components::image>(entity);
         auto &frame_rect = view.get<components::source_rect>(entity);
+        auto &dest_rect = view.get<components::destination_rect>(entity);
 
-        SDL_Rect dest_rect = center_position(position.x, position.y, frame_rect.rect);
-        SDL_RenderCopy(renderer, image.texture, &frame_rect.rect, &dest_rect);
+        SDL_RenderCopy(
+                renderer, image.texture,
+                &frame_rect.rect, &dest_rect.rect);
     }
 }
 
@@ -142,8 +187,10 @@ entt::entity spawn_bullet(
     registry.assign<components::source_rect>(
             bullet,
             components::source_rect::from_texture(texture));
+    registry.assign<components::destination_rect>(bullet);
     registry.assign<components::velocity>(bullet, 0.f, -1.f, 100.f);
     registry.assign<components::screen_boundaries>(bullet, boundaries);
+    registry.assign<components::damage>(bullet, 10);
     registry.assign<components::image>(
             bullet,
             texture);

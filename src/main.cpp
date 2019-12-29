@@ -1,4 +1,7 @@
-//Using SDL and standard IO
+/**
+ * Testing EnTT ECS library using SDL2 as the media library
+ * Implementing a shmup to have fun while I experiment
+ */
 #include <iostream>
 #include <string>
 #include <sciuter/sdl.hpp>
@@ -49,9 +52,10 @@ void main_loop(SDL_Window* window)
     };
 
     auto player_entity = registry.create();
-    registry.assign<components::position>(player_entity, 100.f, 100.f);
+    registry.assign<components::position>(player_entity, 100.f, 300.f);
     registry.assign<components::velocity>(player_entity, 0.f, 0.f, 150.f);
     registry.assign<components::source_rect>(player_entity);
+    registry.assign<components::destination_rect>(player_entity);
     registry.assign<components::animation>(player_entity, &animations["player"], .6f);
     registry.assign<components::image>(
             player_entity,
@@ -61,8 +65,10 @@ void main_loop(SDL_Window* window)
             key_map);
 
     auto enemy = registry.create();
-    registry.assign<components::position>(enemy, 300.f, 300.f);
+    registry.assign<components::position>(enemy, 300.f, 100.f);
     registry.assign<components::source_rect>(enemy);
+    registry.assign<components::destination_rect>(enemy);
+    registry.assign<components::energy>(enemy, 100);
     registry.assign<components::animation>(enemy, &animations["player"], .5f);
     registry.assign<components::image>(
             enemy,
@@ -100,6 +106,8 @@ void main_loop(SDL_Window* window)
 
         update_animation(dt, registry);
         update_linear_velocity(dt, registry);
+        update_destination_rect(registry);
+        resolve_collisions(registry);
         check_boundaries(registry);
 
         //Clear screen
