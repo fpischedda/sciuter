@@ -1,22 +1,26 @@
-#include <stdio.h>
+#include <iostream>
 #include <string>
 #include <sciuter/sdl.hpp>
 #include <SDL2/SDL_image.h>
+
+using namespace std;
 
 SDL_Window* sdl_init(const int screen_width, const int screen_height)
 {
     //Initialize SDL
     if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
     {
-        printf("SDL could not initialize! SDL_Error: %s\n",
-                SDL_GetError());
+        cout << "SDL could not initialize! SDL_Error: "
+	     << SDL_GetError()
+	     << endl;
         return nullptr;
     }
 
     if(! IMG_Init(IMG_INIT_PNG))
     {
-        printf("SDL_Image could not initialize! SDL_Error: %s\n",
-                IMG_GetError());
+        cout << "SDL_Image could not initialize! SDL_Error: "
+             << IMG_GetError()
+	     << endl;
         return nullptr;
     }
 
@@ -31,7 +35,9 @@ SDL_Window* sdl_init(const int screen_width, const int screen_height)
 
     if( nullptr == window)
     {
-        printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
+        cout << "Window could not be created! SDL_Error: "
+	     << SDL_GetError()
+	     << endl;
     }
 
     return window;
@@ -52,7 +58,9 @@ SDL_Surface* optimize_surface(SDL_Surface* surface, const SDL_PixelFormat* forma
     SDL_Surface* optimized = SDL_ConvertSurface( surface, format, 0 );
     if( nullptr == optimized)
     {
-        printf( "Unable to optimize surface! SDL Error: %s\n", SDL_GetError() );
+        cout << "Unable to optimize surface! SDL Error: "
+	     << SDL_GetError()
+	     << endl;
     }
 
     return optimized;
@@ -64,7 +72,9 @@ SDL_Surface* load_surface(const std::string& path, const SDL_PixelFormat* format
     SDL_Surface* surface = IMG_Load( path.c_str() );
     if( nullptr == surface)
     {
-        printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
+        cout << "Unable to load image " << path << "! SDL_image Error: "
+	     << IMG_GetError()
+	     << endl;
     }
 
     if( nullptr != format )
@@ -86,7 +96,9 @@ SDL_Texture* load_texture( const std::string path, SDL_Renderer* renderer )
     SDL_Surface* surface = IMG_Load( path.c_str() );
     if( nullptr == surface )
     {
-        printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
+        cout << "Unable to load image " << path << "! SDL_image Error: "
+	     << IMG_GetError()
+	     << endl;
     }
     else
     {
@@ -94,7 +106,9 @@ SDL_Texture* load_texture( const std::string path, SDL_Renderer* renderer )
         texture = SDL_CreateTextureFromSurface( renderer, surface );
         if( nullptr == texture )
         {
-            printf( "Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+            cout << "Unable to create texture from " << path << "! SDL Error: "
+						  << SDL_GetError()
+						  << endl;
         }
 
         //Get rid of old loaded surface

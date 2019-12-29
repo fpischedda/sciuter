@@ -1,5 +1,5 @@
 //Using SDL and standard IO
-#include <stdio.h>
+#include <iostream>
 #include <string>
 #include <sciuter/sdl.hpp>
 #include <sciuter/components.hpp>
@@ -10,6 +10,8 @@
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
+
+using namespace std;
 
 void main_loop(SDL_Window* window)
 {
@@ -22,7 +24,7 @@ void main_loop(SDL_Window* window)
     SDL_Renderer* renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED );
     if( renderer == NULL )
     {
-        printf( "Renderer could not be created! SDL Error: %s\n", SDL_GetError() );
+        cout << "Renderer could not be created! SDL Error: " << SDL_GetError() << endl;
         return;
     }
 
