@@ -14,31 +14,46 @@ typedef std::map<std::string, SDL_Texture*> ResourceMap;
 class Resources
 {
     private:
-        ResourceMap m_resources;
+	ResourceMap m_resources;
+	static Resources s_instance;
+	Resources() { }
+
+	SDL_Texture* _load(const std::string path, SDL_Renderer* renderer)
+	{
+	    auto texture = load_texture(path, renderer);
+	    if( nullptr != texture )
+	    {
+		m_resources[path] = texture;
+	    }
+	    return texture;
+	}
+
+	SDL_Texture* _get(const std::string path)
+	{
+	    return m_resources[path];
+	}
+
+	static Resources& get_instance() { return Resources::s_instance; }
 
     public:
-        Resources() { }
-        ~Resources()
-        {
-            for(auto& [_path, texture] : m_resources)
-            {
-                SDL_DestroyTexture(texture);
-            }
-        }
+	~Resources()
+	{
+	    for(auto& [_path, texture] : m_resources)
+	    {
+		SDL_DestroyTexture(texture);
+	    }
+	}
 
-        SDL_Texture* load(const std::string path, SDL_Renderer* renderer)
-        {
-            auto texture = load_texture(path, renderer);
-            if( nullptr != texture )
-            {
-                m_resources[path] = texture;
-            }
-            return texture;
-        }
+	static SDL_Texture* load(const std::string path, SDL_Renderer* renderer)
+	{
+	    auto& instance = Resources::get_instance();
+	    return instance._load(path, renderer);
+	}
 
-        SDL_Texture* get(const std::string path)
-        {
-            return m_resources[path];
-        }
+	static SDL_Texture* get(const std::string path)
+	{
+	    auto& instance = Resources::get_instance();
+	    return instance._get(path);
+	}
 };
 #endif
