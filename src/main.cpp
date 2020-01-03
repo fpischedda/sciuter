@@ -16,9 +16,9 @@ const int SCREEN_HEIGHT = 480;
 
 using namespace std;
 
-void create_player_entity(
+entt::entity create_player_entity(
         AnimationMap& animations,
-        Resources& resources, entt::registry& registry)
+        entt::registry& registry)
 {
     // KeyActionMap holds an association between "low level" key code
     // to high level action which is represented by a string
@@ -40,16 +40,19 @@ void create_player_entity(
     registry.assign<components::animation>(entity, &animations["player"], .6f);
     registry.assign<components::image>(
             entity,
-            resources.get("resources/images/player.png"));
+            Resources::get("resources/images/player.png"));
     registry.assign<components::gamepad>(
             entity,
             key_map);
+
+    return entity;
 }
 
 void create_enemy_entity(
         const float x, const float y,
         AnimationMap& animations,
-        Resources& resources, entt::registry& registry)
+	entt::entity& target,
+        entt::registry& registry)
 {
 
     auto enemy = registry.create();
@@ -58,15 +61,15 @@ void create_enemy_entity(
     registry.assign<components::destination_rect>(enemy);
     registry.assign<components::energy>(enemy, 100);
     registry.assign<components::animation>(enemy, &animations["ufo"], .5f);
+    registry.assign<components::target>(enemy, target);
     registry.assign<components::image>(
             enemy,
-            resources.get("resources/images/ufo.png"));
+            Resources::get("resources/images/ufo.png"));
 }
 
 void main_loop(SDL_Window* window)
 {
     unsigned int old_time = SDL_GetTicks();
-    Resources resources;
     bool quit = false;
     SDL_Event e;
 
@@ -81,25 +84,25 @@ void main_loop(SDL_Window* window)
     //Initialize renderer color
     SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
 
-    resources.load("resources/images/background.png", renderer);
-    resources.load("resources/images/player.png", renderer);
-    resources.load("resources/images/ufo.png", renderer);
-    resources.load("resources/images/bullet.png", renderer);
+    Resources::load("resources/images/background.png", renderer);
+    Resources::load("resources/images/player.png", renderer);
+    Resources::load("resources/images/ufo.png", renderer);
+    Resources::load("resources/images/bullet.png", renderer);
 
-    SDL_Texture* background = resources.get("resources/images/background.png");
+    SDL_Texture* background = Resources::get("resources/images/background.png");
 
     entt::registry registry;
 
     AnimationMap player_animations = TexturePackerAnimationLoader::load(
             "resources/images/player.json");
-    create_player_entity(player_animations, resources, registry);
+    auto player = create_player_entity(player_animations, registry);
 
     AnimationMap enemy_animations = TexturePackerAnimationLoader::load(
             "resources/images/ufo.json");
-    create_enemy_entity(200.f, 50.f, enemy_animations, resources, registry);
-    create_enemy_entity(300.f, 100.f, enemy_animations, resources, registry);
-    create_enemy_entity(100.f, 180.f, enemy_animations, resources, registry);
-    create_enemy_entity(500.f, 80.f, enemy_animations, resources, registry);
+    create_enemy_entity(200.f, 50.f, enemy_animations, player, registry);
+    create_enemy_entity(300.f, 100.f, enemy_animations, player, registry);
+    create_enemy_entity(100.f, 180.f, enemy_animations, player, registry);
+    create_enemy_entity(500.f, 80.f, enemy_animations, player, registry);
 
     SDL_Rect screen_rect = {0, 0, 640, 480};
     while( !quit )
@@ -129,11 +132,12 @@ void main_loop(SDL_Window* window)
         old_time = now_time;
 
 
-        handle_gamepad(screen_rect, resources, registry);
+        handle_gamepad(screen_rect, registry);
 
         update_animation(dt, registry);
         update_linear_velocity(dt, registry);
         update_destination_rect(registry);
+        update_shot_to_target_behaviour(screen_rect, registry);
         resolve_collisions(registry);
         check_boundaries(registry);
 

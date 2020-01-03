@@ -1,9 +1,8 @@
 #include <sciuter/systems.hpp>
 
 void handle_gamepad(
-        SDL_Rect& boundaries,
-        Resources& resources,
-        entt::registry& registry)
+    SDL_Rect& boundaries,
+    entt::registry& registry)
 {
     auto view = registry.view<
         components::position,
@@ -49,7 +48,8 @@ void handle_gamepad(
         {
             spawn_bullet(
                     position.x, position.y,
-                    boundaries, resources, registry);
+		    100.f,
+                    boundaries, registry);
         }
     }
 }
@@ -87,7 +87,7 @@ void update_linear_velocity(float dt, entt::registry& registry)
     for(auto entity: view) {
         auto &position = view.get<components::position>(entity);
         auto &velocity = view.get<components::velocity>(entity);
-        
+
         position.x += velocity.dx * velocity.speed * dt;
         position.y += velocity.dy * velocity.speed * dt;
     }
@@ -106,6 +106,32 @@ void update_destination_rect(entt::registry& registry)
         auto &dest = view.get<components::destination_rect>(entity);
 
         dest.rect = center_position(position.x, position.y, frame_rect.rect);
+    }
+}
+
+void update_shot_to_target_behaviour(
+    SDL_Rect& boundaries,
+    entt::registry& registry)
+{
+    auto view = registry.view<
+        components::position,
+        components::target,
+        components::destination_rect>();
+
+    for(auto entity: view) {
+        auto &dest = view.get<components::destination_rect>(entity);
+        auto &target = view.get<components::target>(entity);
+	auto &target_pos = registry.get<components::destination_rect>(target.entity);
+
+	if(target_pos.rect.x < dest.rect.x + dest.rect.w &&
+	   target_pos.rect.x + target_pos.rect.w > dest.rect.x)
+	{
+	    auto &position = view.get<components::position>(entity);
+	    spawn_bullet(
+                    position.x, position.y,
+		    -100.f,
+                    boundaries, registry);
+	}
     }
 }
 
@@ -177,20 +203,23 @@ void render_sprites(SDL_Renderer* renderer, entt::registry& registry)
 
 entt::entity spawn_bullet(
         const float x, const float y,
+	const float speed,
         const SDL_Rect& boundaries,
-        Resources& resources,
         entt::registry& registry)
 {
     auto bullet = registry.create();
-    auto texture = resources.get("resources/images/bullet.png");
+    auto texture = Resources::get("resources/images/bullet.png");
     registry.assign<components::position>(bullet, x, y);
     registry.assign<components::source_rect>(
             bullet,
             components::source_rect::from_texture(texture));
     registry.assign<components::destination_rect>(bullet);
-    registry.assign<components::velocity>(bullet, 0.f, -1.f, 100.f);
+    registry.assign<components::velocity>(bullet, 0.f, -1.f, speed);
     registry.assign<components::screen_boundaries>(bullet, boundaries);
-    registry.assign<components::damage>(bullet, 10);
+    if(speed > 0)
+    {
+	registry.assign<components::damage>(bullet, 10);
+    }
     registry.assign<components::image>(
             bullet,
             texture);

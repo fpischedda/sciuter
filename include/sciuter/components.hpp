@@ -164,6 +164,11 @@ namespace components
     {
         int value;
     };
+
+    struct target
+    {
+	entt::entity entity;
+    };
 } //components
 
 
