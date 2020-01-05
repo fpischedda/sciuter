@@ -229,7 +229,12 @@ entt::entity spawn_bullet(
     entt::registry& registry)
 {
     auto bullet = registry.create();
-    auto texture = Resources::get("resources/images/bullet.png");
+    SDL_Texture* texture;
+    if(collision_mask & COLLISION_MASK_ENEMIES) {
+	texture = Resources::get("resources/images/bullet.png");
+    } else {
+	texture = Resources::get("resources/images/bullet-enemy.png");
+    }
     registry.assign<components::position>(bullet, x, y);
     registry.assign<components::source_rect>(
             bullet,

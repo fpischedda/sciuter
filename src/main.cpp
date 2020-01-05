@@ -113,6 +113,7 @@ void main_loop(SDL_Window* window)
     Resources::load("resources/images/ufo.png", renderer);
     Resources::load("resources/images/boss.png", renderer);
     Resources::load("resources/images/bullet.png", renderer);
+    Resources::load("resources/images/bullet-enemy.png", renderer);
 
     SDL_Texture* background = Resources::get("resources/images/background.png");
 
