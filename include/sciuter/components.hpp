@@ -169,6 +169,24 @@ namespace components
     {
 	entt::entity entity;
     };
+
+    struct timer
+    {
+	float timeout;
+	float reset_time;
+
+	timer(const float time) : timeout(time), reset_time(time) {}
+
+	const float update(const float dt) {
+	    if(timeout <= 0.f) {
+		timeout += reset_time;
+	    }
+	    timeout -= dt;
+	    return timeout;
+	}
+
+	const bool timed_out() const { return timeout <= 0.f; }
+    };
 } //components
 
 
