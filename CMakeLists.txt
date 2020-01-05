@@ -6,7 +6,6 @@ project(sciuter VERSION 0.1)
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # define sources and include directories
 list(APPEND SOURCES src/main.cpp src/animation.cpp src/sdl.cpp src/systems.cpp)
@@ -28,3 +27,22 @@ find_library(SDL2_image REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${SDL2_iamge_INCLUDE_DIRS})
 target_link_libraries(sciuter SDL2 SDL2_image)
+
+# set some directories
+set(executable_dir ${PROJECT_SOURCE_DIR}/bin)
+
+# put executable into bin directory
+set(EXECUTABLE_OUTPUT_PATH ${executable_dir} CACHE PATH "Binary directory" FORCE)
+
+# version should be retrieved from last tag on git
+set(CPACK_PACKAGE_VERSION "0.1")
+# create dist file
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME
+  "${CMAKE_PROJECT_NAME}-${CPACK_PACKAGE_VERSION}")
+
+set(CPACK_SOURCE_IGNORE_FILES
+  "/bin/;/.git/;/*.gz/;/_CPack_Packages/;/*.cmake$;")
+include(CPack)
+
+add_custom_target(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
