@@ -41,6 +41,7 @@ entt::entity create_player_entity(
     registry.assign<components::image>(
             entity,
             Resources::get("resources/images/player.png"));
+    registry.assign<components::timer>(entity, 0.05);
     registry.assign<components::gamepad>(
             entity,
             key_map);
@@ -48,10 +49,9 @@ entt::entity create_player_entity(
     return entity;
 }
 
-void create_enemy_entity(
+entt::entity create_enemy_entity(
         const float x, const float y,
         AnimationMap& animations,
-	entt::entity& target,
         entt::registry& registry)
 {
 
@@ -61,10 +61,30 @@ void create_enemy_entity(
     registry.assign<components::destination_rect>(enemy);
     registry.assign<components::energy>(enemy, 100);
     registry.assign<components::animation>(enemy, &animations["ufo"], .5f);
-    registry.assign<components::target>(enemy, target);
     registry.assign<components::image>(
             enemy,
             Resources::get("resources/images/ufo.png"));
+    return enemy;
+}
+
+entt::entity create_boss_entity(
+        const float x, const float y,
+	entt::entity& target,
+        entt::registry& registry)
+{
+    auto texture = Resources::get("resources/images/boss.png");
+    auto enemy = registry.create();
+    registry.assign<components::position>(enemy, x, y);
+    registry.assign<components::velocity>(enemy, 0.f, 0.f, 50.f);
+    registry.assign<components::source_rect>(
+            enemy,
+            components::source_rect::from_texture(texture));
+    registry.assign<components::destination_rect>(enemy);
+    registry.assign<components::energy>(enemy, 300);
+    registry.assign<components::timer>(enemy, 0.5f);
+    registry.assign<components::target>(enemy, target);
+    registry.assign<components::image>(enemy, texture);
+    return enemy;
 }
 
 void main_loop(SDL_Window* window)
@@ -87,6 +107,7 @@ void main_loop(SDL_Window* window)
     Resources::load("resources/images/background.png", renderer);
     Resources::load("resources/images/player.png", renderer);
     Resources::load("resources/images/ufo.png", renderer);
+    Resources::load("resources/images/boss.png", renderer);
     Resources::load("resources/images/bullet.png", renderer);
 
     SDL_Texture* background = Resources::get("resources/images/background.png");
@@ -99,10 +120,12 @@ void main_loop(SDL_Window* window)
 
     AnimationMap enemy_animations = TexturePackerAnimationLoader::load(
             "resources/images/ufo.json");
-    create_enemy_entity(200.f, 50.f, enemy_animations, player, registry);
-    create_enemy_entity(300.f, 100.f, enemy_animations, player, registry);
-    create_enemy_entity(100.f, 180.f, enemy_animations, player, registry);
-    create_enemy_entity(500.f, 80.f, enemy_animations, player, registry);
+    create_enemy_entity(200.f, 50.f, enemy_animations, registry);
+    create_enemy_entity(300.f, 100.f, enemy_animations, registry);
+    create_enemy_entity(100.f, 180.f, enemy_animations, registry);
+    create_enemy_entity(500.f, 80.f, enemy_animations, registry);
+
+    create_boss_entity(320.f, 200.f, player, registry);
 
     SDL_Rect screen_rect = {0, 0, 640, 480};
     while( !quit )
@@ -132,9 +155,10 @@ void main_loop(SDL_Window* window)
         old_time = now_time;
 
 
+	update_timers(dt, registry);
         handle_gamepad(screen_rect, registry);
 
-        update_animation(dt, registry);
+        update_animations(dt, registry);
         update_linear_velocity(dt, registry);
         update_destination_rect(registry);
         update_shot_to_target_behaviour(screen_rect, registry);
