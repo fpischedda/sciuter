@@ -1,17 +1,31 @@
+#include <iostream>
 #include <sciuter/systems.hpp>
 
+void update_timers(const float dt, entt::registry& registry)
+{
+    auto view = registry.view<
+        components::timer>();
+
+    for(auto entity: view) {
+        auto &timer = view.get<components::timer>(entity);
+	timer.update(dt);
+    }
+}
+
 void handle_gamepad(
-    SDL_Rect& boundaries,
+    const SDL_Rect& boundaries,
     entt::registry& registry)
 {
     auto view = registry.view<
         components::position,
         components::velocity,
+        components::timer,
         components::gamepad>();
 
     for(auto entity: view) {
         auto &position = view.get<components::position>(entity);
         auto &velocity = view.get<components::velocity>(entity);
+        auto &timer = view.get<components::timer>(entity);
         auto &gamepad = view.get<components::gamepad>(entity);
 
         gamepad.update();
@@ -44,11 +58,11 @@ void handle_gamepad(
 
         velocity.normalize();
 
-        if(gamepad.pressed("fire"))
+        if(gamepad.down("fire") && timer.timed_out())
         {
             spawn_bullet(
                     position.x, position.y,
-		    100.f,
+		    150.f,
                     boundaries, registry);
         }
     }
@@ -64,7 +78,7 @@ SDL_Rect center_position(const int x, const int y, const SDL_Rect& frame_rect)
     return position;
 }
 
-void update_animation(float dt, entt::registry &registry)
+void update_animations(const float dt, entt::registry &registry)
 {
     auto view = registry.view<
         components::animation,
@@ -78,7 +92,7 @@ void update_animation(float dt, entt::registry &registry)
     }
 }
 
-void update_linear_velocity(float dt, entt::registry& registry)
+void update_linear_velocity(const float dt, entt::registry& registry)
 {
     auto view = registry.view<
         components::position,
@@ -110,27 +124,28 @@ void update_destination_rect(entt::registry& registry)
 }
 
 void update_shot_to_target_behaviour(
-    SDL_Rect& boundaries,
+    const SDL_Rect& boundaries,
     entt::registry& registry)
 {
     auto view = registry.view<
-        components::position,
+        components::timer,
         components::target,
         components::destination_rect>();
 
     for(auto entity: view) {
+        auto &timer = view.get<components::timer>(entity);
         auto &dest = view.get<components::destination_rect>(entity);
         auto &target = view.get<components::target>(entity);
 	auto &target_pos = registry.get<components::destination_rect>(target.entity);
 
-	if(target_pos.rect.x < dest.rect.x + dest.rect.w &&
+	if(timer.timed_out() &&
+	   target_pos.rect.x < dest.rect.x + dest.rect.w &&
 	   target_pos.rect.x + target_pos.rect.w > dest.rect.x)
 	{
-	    auto &position = view.get<components::position>(entity);
-	    spawn_bullet(
-                    position.x, position.y,
-		    -100.f,
-                    boundaries, registry);
+	    const float x = dest.rect.x + dest.rect.w / 2;
+	    const float y = dest.rect.y + dest.rect.h + 32;
+	    std::cout << "trying to shoot! at x: " << x << ", y: " << y;
+	    spawn_bullet(x, y, -100.f, boundaries, registry);
 	}
     }
 }
@@ -196,16 +211,16 @@ void render_sprites(SDL_Renderer* renderer, entt::registry& registry)
         auto &dest_rect = view.get<components::destination_rect>(entity);
 
         SDL_RenderCopy(
-                renderer, image.texture,
-                &frame_rect.rect, &dest_rect.rect);
+	    renderer, image.texture,
+	    &frame_rect.rect, &dest_rect.rect);
     }
 }
 
 entt::entity spawn_bullet(
-        const float x, const float y,
-	const float speed,
-        const SDL_Rect& boundaries,
-        entt::registry& registry)
+    const float x, const float y,
+    const float speed,
+    const SDL_Rect& boundaries,
+    entt::registry& registry)
 {
     auto bullet = registry.create();
     auto texture = Resources::get("resources/images/bullet.png");
