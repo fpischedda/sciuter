@@ -165,6 +165,11 @@ namespace components
         int value;
     };
 
+    struct collision_mask
+    {
+	unsigned int value;
+    };
+
     struct target
     {
 	entt::entity entity;
@@ -176,6 +181,8 @@ namespace components
 	float reset_time;
 
 	timer(const float time) : timeout(time), reset_time(time) {}
+	timer(const float time, const float start_offset)
+	    : timeout(time * start_offset), reset_time(time) {}
 
 	const float update(const float dt) {
 	    if(timeout <= 0.f) {

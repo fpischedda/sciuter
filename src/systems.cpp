@@ -62,7 +62,7 @@ void handle_gamepad(
         {
             spawn_bullet(
                     position.x, position.y,
-		    150.f,
+		    150.f, COLLISION_MASK_ENEMIES,
                     boundaries, registry);
         }
     }
@@ -143,9 +143,9 @@ void update_shot_to_target_behaviour(
 	   target_pos.rect.x + target_pos.rect.w > dest.rect.x)
 	{
 	    const float x = dest.rect.x + dest.rect.w / 2;
-	    const float y = dest.rect.y + dest.rect.h + 32;
-	    std::cout << "trying to shoot! at x: " << x << ", y: " << y;
-	    spawn_bullet(x, y, -100.f, boundaries, registry);
+	    const float y = dest.rect.y + dest.rect.h;
+	    spawn_bullet(x, y, -100.f, COLLISION_MASK_PLAYER,
+			 boundaries, registry);
 	}
     }
 }
@@ -171,27 +171,32 @@ void resolve_collisions(entt::registry& registry)
 {
     auto view_bullets = registry.view<
         components::destination_rect,
+        components::collision_mask,
         components::damage>();
-    auto view_enemies = registry.view<
+    auto view_targets = registry.view<
         components::destination_rect,
+        components::collision_mask,
         components::energy>();
 
     for(auto bullet: view_bullets) {
+        auto &bullet_mask = view_bullets.get<components::collision_mask>(bullet);
         auto &bullet_rect = view_bullets.get<components::destination_rect>(bullet);
         auto &damage = view_bullets.get<components::damage>(bullet);
 
-        for(auto enemy: view_enemies) {
-            auto &enemy_rect = view_enemies.get<components::destination_rect>(enemy);
-            auto &energy = view_enemies.get<components::energy>(enemy);
+        for(auto target: view_targets) {
+	    auto &target_mask = view_targets.get<components::collision_mask>(target);
+	    auto &target_rect = view_targets.get<components::destination_rect>(target);
+            auto &energy = view_targets.get<components::energy>(target);
 
-            if(SDL_HasIntersection(&bullet_rect.rect, &enemy_rect.rect))
+            if((bullet_mask.value & target_mask.value) != 0 &&
+	       SDL_HasIntersection(&bullet_rect.rect, &target_rect.rect))
             {
                 registry.destroy(bullet);
                 energy.value -= damage.value;
 
                 if(energy.value <= 0)
                 {
-                    registry.destroy(enemy);
+                    registry.destroy(target);
                 }
             }
         }
@@ -219,6 +224,7 @@ void render_sprites(SDL_Renderer* renderer, entt::registry& registry)
 entt::entity spawn_bullet(
     const float x, const float y,
     const float speed,
+    const unsigned int collision_mask,
     const SDL_Rect& boundaries,
     entt::registry& registry)
 {
@@ -231,10 +237,8 @@ entt::entity spawn_bullet(
     registry.assign<components::destination_rect>(bullet);
     registry.assign<components::velocity>(bullet, 0.f, -1.f, speed);
     registry.assign<components::screen_boundaries>(bullet, boundaries);
-    if(speed > 0)
-    {
-	registry.assign<components::damage>(bullet, 10);
-    }
+    registry.assign<components::damage>(bullet, 10);
+    registry.assign<components::collision_mask>(bullet, collision_mask);
     registry.assign<components::image>(
             bullet,
             texture);

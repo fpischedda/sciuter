@@ -7,6 +7,9 @@
 #include <sciuter/animation.hpp>
 #include <sciuter/resources.hpp>
 
+const unsigned int COLLISION_MASK_ENEMIES = 1;
+const unsigned int COLLISION_MASK_PLAYER = 2;
+
 void update_timers(float dt, entt::registry &registry);
 void handle_gamepad(
         const SDL_Rect& boundaries,
@@ -26,6 +29,7 @@ void render_sprites(SDL_Renderer* renderer, entt::registry& registry);
 entt::entity spawn_bullet(
         const float x, const float y,
 	const float speed,
+	const unsigned int collision_mask,
         const SDL_Rect& boundaries,
         entt::registry& registry);
 

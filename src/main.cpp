@@ -42,6 +42,8 @@ entt::entity create_player_entity(
             entity,
             Resources::get("resources/images/player.png"));
     registry.assign<components::timer>(entity, 0.05);
+    registry.assign<components::energy>(entity, 100000);
+    registry.assign<components::collision_mask>(entity, COLLISION_MASK_PLAYER);
     registry.assign<components::gamepad>(
             entity,
             key_map);
@@ -61,6 +63,7 @@ entt::entity create_enemy_entity(
     registry.assign<components::destination_rect>(enemy);
     registry.assign<components::energy>(enemy, 100);
     registry.assign<components::animation>(enemy, &animations["ufo"], .5f);
+    registry.assign<components::collision_mask>(enemy, COLLISION_MASK_ENEMIES);
     registry.assign<components::image>(
             enemy,
             Resources::get("resources/images/ufo.png"));
@@ -84,6 +87,7 @@ entt::entity create_boss_entity(
     registry.assign<components::timer>(enemy, 0.5f);
     registry.assign<components::target>(enemy, target);
     registry.assign<components::image>(enemy, texture);
+    registry.assign<components::collision_mask>(enemy, COLLISION_MASK_ENEMIES);
     return enemy;
 }
 
@@ -161,9 +165,9 @@ void main_loop(SDL_Window* window)
         update_animations(dt, registry);
         update_linear_velocity(dt, registry);
         update_destination_rect(registry);
-        update_shot_to_target_behaviour(screen_rect, registry);
         resolve_collisions(registry);
         check_boundaries(registry);
+        update_shot_to_target_behaviour(screen_rect, registry);
 
         //Clear screen
         SDL_RenderClear( renderer );
