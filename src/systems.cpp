@@ -61,10 +61,10 @@ void handle_gamepad(
         if(gamepad.down("fire") && timer.timed_out())
         {
             spawn_bullet(
-                    position.x, position.y,
-		    150.f, COLLISION_MASK_ENEMIES,
-                    boundaries, registry);
-        }
+		position, {0.f, -1.f, 150.f},
+		COLLISION_MASK_ENEMIES,
+		boundaries, registry);
+	}
     }
 }
 
@@ -142,10 +142,26 @@ void update_shot_to_target_behaviour(
 	   target_pos.rect.x < dest.rect.x + dest.rect.w &&
 	   target_pos.rect.x + target_pos.rect.w > dest.rect.x)
 	{
-	    const float x = dest.rect.x + dest.rect.w / 2;
-	    const float y = dest.rect.y + dest.rect.h;
-	    spawn_bullet(x, y, -100.f, COLLISION_MASK_PLAYER,
-			 boundaries, registry);
+	    const components::position& position = {
+		(float)(dest.rect.x + dest.rect.w / 2),
+		(float)(dest.rect.y + dest.rect.h)
+	    };
+	    components::velocity velocities[] = {
+		{0.f, 1.f, 90.f},
+		{0.5f, 1.f, 90.f},
+		{1.f, 1.f, 90.f},
+		{2.f, 1.f, 80.f},
+		{3.f, 1.f, 70.f},
+		{-3.f, 1.f, 70.f},
+		{-2.f, 1.f, 80.f},
+		{-1.f, 1.f, 90.f},
+		{-0.5f, 1.f, 90.f},
+	    };
+	    for(auto& velocity : velocities) {
+		spawn_bullet(position, velocity.normalize(),
+			     COLLISION_MASK_PLAYER,
+			     boundaries, registry);
+	    }
 	}
     }
 }
@@ -222,8 +238,8 @@ void render_sprites(SDL_Renderer* renderer, entt::registry& registry)
 }
 
 entt::entity spawn_bullet(
-    const float x, const float y,
-    const float speed,
+    const components::position& position,
+    const components::velocity& velocity,
     const unsigned int collision_mask,
     const SDL_Rect& boundaries,
     entt::registry& registry)
@@ -235,12 +251,12 @@ entt::entity spawn_bullet(
     } else {
 	texture = Resources::get("resources/images/bullet-enemy.png");
     }
-    registry.assign<components::position>(bullet, x, y);
+    registry.assign<components::position>(bullet, position);
     registry.assign<components::source_rect>(
             bullet,
             components::source_rect::from_texture(texture));
     registry.assign<components::destination_rect>(bullet);
-    registry.assign<components::velocity>(bullet, 0.f, -1.f, speed);
+    registry.assign<components::velocity>(bullet, velocity);
     registry.assign<components::screen_boundaries>(bullet, boundaries);
     registry.assign<components::damage>(bullet, 10);
     registry.assign<components::collision_mask>(bullet, collision_mask);

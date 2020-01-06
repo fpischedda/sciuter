@@ -21,7 +21,7 @@ namespace components
         float dy;
         float speed;
 
-        void normalize()
+        velocity& normalize()
         {
             float len = sqrt(dx * dx + dy * dy);
             if(len != 0)
@@ -29,6 +29,7 @@ namespace components
                 dx /= len;
                 dy /= len;
             }
+	    return *this;
         }
     };
 
