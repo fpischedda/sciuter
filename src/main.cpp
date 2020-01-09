@@ -10,9 +10,9 @@
 #include <sciuter/resources.hpp>
 #include <sciuter/systems.hpp>
 
-//Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+//game dimension constants
+const int AREA_WIDTH = 640;
+const int AREA_HEIGHT = 480;
 
 using namespace std;
 
@@ -91,7 +91,7 @@ entt::entity create_boss_entity(
     return enemy;
 }
 
-void main_loop(SDL_Window* window)
+void main_loop(SDL_Window* window, const int fixed_scale)
 {
     unsigned int old_time = SDL_GetTicks();
     bool quit = false;
@@ -132,7 +132,7 @@ void main_loop(SDL_Window* window)
 
     create_boss_entity(320.f, 200.f, player, registry);
 
-    SDL_Rect screen_rect = {0, 0, 640, 480};
+    SDL_Rect screen_rect = {0, 0, AREA_WIDTH, AREA_HEIGHT};
     while( !quit )
     {
         while( SDL_PollEvent( &e ) != 0 )
@@ -176,7 +176,7 @@ void main_loop(SDL_Window* window)
         //Render texture to screen
         SDL_RenderCopy( renderer, background, NULL, NULL );
 
-        render_sprites(renderer, registry);
+        render_sprites(renderer, fixed_scale, registry);
 
         //Update screen
         SDL_RenderPresent( renderer );
@@ -186,12 +186,33 @@ void main_loop(SDL_Window* window)
 
 int main( int argc, char* args[] )
 {
-    SDL_Window* window = sdl_init(SCREEN_WIDTH, SCREEN_HEIGHT);
+    SDL_Window* window = sdl_init(AREA_WIDTH, AREA_HEIGHT);
 
-    if( NULL != window)
+    if( NULL == window)
     {
-        main_loop(window);
+	SDL_Log("window creation failed: %s", SDL_GetError());
+	return 1;
     }
+
+    SDL_DisplayMode dm;
+
+    if (SDL_GetDesktopDisplayMode(0, &dm) != 0)
+    {
+	SDL_Log("SDL_GetDesktopDisplayMode failed: %s", SDL_GetError());
+	return 1;
+    }
+
+    cout << "width: " << dm.w << " height: " << dm.h;
+
+    int scale = 1;
+
+    if(AREA_WIDTH * 2 > dm.w) {
+	scale = dm.w / AREA_WIDTH;
+
+	SDL_SetWindowSize(window, dm.w, dm.h);
+    }
+
+    main_loop(window, scale);
 
     //Quit SDL subsystems
     sdl_quit(window);

@@ -219,7 +219,9 @@ void resolve_collisions(entt::registry& registry)
     }
 }
 
-void render_sprites(SDL_Renderer* renderer, entt::registry& registry)
+void render_sprites(SDL_Renderer* renderer,
+		    const int scale,
+		    entt::registry& registry)
 {
     auto view = registry.view<
         components::image,
@@ -228,12 +230,16 @@ void render_sprites(SDL_Renderer* renderer, entt::registry& registry)
 
     for(auto entity: view) {
         auto &image = view.get<components::image>(entity);
-        auto &frame_rect = view.get<components::source_rect>(entity);
-        auto &dest_rect = view.get<components::destination_rect>(entity);
+        auto &frame = view.get<components::source_rect>(entity);
+        auto &dest = view.get<components::destination_rect>(entity);
+	const SDL_Rect scaled {
+	    dest.rect.x * scale, dest.rect.y * scale,
+	    dest.rect.w * scale, dest.rect.h * scale,
+	};
 
         SDL_RenderCopy(
 	    renderer, image.texture,
-	    &frame_rect.rect, &dest_rect.rect);
+	    &frame.rect, &scaled);
     }
 }
 

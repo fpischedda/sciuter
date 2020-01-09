@@ -24,7 +24,9 @@ void update_shot_to_target_behaviour(
     entt::registry& registry);
 void resolve_collisions(entt::registry& registry);
 void check_boundaries(entt::registry& registry);
-void render_sprites(SDL_Renderer* renderer, entt::registry& registry);
+void render_sprites(SDL_Renderer* renderer,
+		    const int scale,
+		    entt::registry& registry);
 
 entt::entity spawn_bullet(
     const components::position& position,
