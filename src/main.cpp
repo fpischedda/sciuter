@@ -91,6 +91,14 @@ entt::entity create_boss_entity(
     return enemy;
 }
 
+entt::entity create_camera(const SDL_Rect& viewport,
+			   const SDL_Rect& bounds,
+			   entt::registry& registry)
+{
+    entt::entity camera = registry.create();
+    return camera;
+}
+
 void main_loop(SDL_Window* window, const int fixed_scale)
 {
     unsigned int old_time = SDL_GetTicks();
@@ -213,6 +221,7 @@ int main( int argc, char* args[] )
     }
 
     SDL_SetWindowSize(window, AREA_WIDTH * scale, AREA_HEIGHT * scale);
+    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, 10);
 
     main_loop(window, scale);
 

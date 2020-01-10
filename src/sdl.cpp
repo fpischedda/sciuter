@@ -10,24 +10,20 @@ SDL_Window* sdl_init(const int screen_width, const int screen_height)
     //Initialize SDL
     if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
     {
-        cout << "SDL could not initialize! SDL_Error: "
-	     << SDL_GetError()
-	     << endl;
+	SDL_Log("SDL could not initialize! SDL_Error: %s", SDL_GetError());
         return nullptr;
     }
 
     if(! IMG_Init(IMG_INIT_PNG))
     {
-        cout << "SDL_Image could not initialize! SDL_Error: "
-             << IMG_GetError()
-	     << endl;
+	SDL_Log("SDL_Image could not initialize! SDL_Error: %s", SDL_GetError());
         return nullptr;
     }
 
     //Create window
     SDL_Window* window = SDL_CreateWindow(
             "SDL Tutorial",
-            SDL_WINDOWPOS_UNDEFINED,
+            SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_UNDEFINED,
             screen_width,
             screen_height,
@@ -35,9 +31,8 @@ SDL_Window* sdl_init(const int screen_width, const int screen_height)
 
     if( nullptr == window)
     {
-        cout << "Window could not be created! SDL_Error: "
-	     << SDL_GetError()
-	     << endl;
+	SDL_Log("Window could not be created! SDL_Error: %s", SDL_GetError());
+        return nullptr;
     }
 
     return window;
