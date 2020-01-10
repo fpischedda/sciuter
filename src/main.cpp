@@ -204,13 +204,15 @@ int main( int argc, char* args[] )
 
     cout << "width: " << dm.w << " height: " << dm.h;
 
-    int scale = 1;
+    int scale = dm.w / AREA_WIDTH;
 
-    if(AREA_WIDTH * 2 > dm.w) {
-	scale = dm.w / AREA_WIDTH;
-
-	SDL_SetWindowSize(window, dm.w, dm.h);
+    // if upscaling I want the window to be a bit smaller than the screen
+    // (in future enable this check only for windowed mode)
+    if(scale > 1 && AREA_WIDTH * scale == dm.w) {
+	scale = scale - 1;
     }
+
+    SDL_SetWindowSize(window, AREA_WIDTH * scale, AREA_HEIGHT * scale);
 
     main_loop(window, scale);
 
