@@ -195,6 +195,12 @@ namespace components
 
 	const bool timed_out() const { return timeout <= 0.f; }
     };
+
+    struct viewport
+    {
+	SDL_Rect rect;
+	SDL_Rect bounds;
+    };
 } //components
 
 
