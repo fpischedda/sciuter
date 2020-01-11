@@ -284,8 +284,6 @@ entt::entity spawn_bullet(
     registry.assign<components::screen_boundaries>(bullet, boundaries);
     registry.assign<components::damage>(bullet, 10);
     registry.assign<components::collision_mask>(bullet, collision_mask);
-    registry.assign<components::image>(
-            bullet,
-            texture);
+    registry.assign<components::image>(bullet, texture);
     return bullet;
 }

@@ -113,6 +113,22 @@ void create_random_enemies(const float end_y,
     }
 }
 
+entt::entity create_background(entt::registry& registry)
+{
+    auto bg = registry.create();
+    SDL_Texture* texture = Resources::get("resources/images/background.png");
+
+    registry.assign<components::position>(bg, 320.f, 600.f);
+    registry.assign<components::world_position>(bg);
+    registry.assign<components::source_rect>(
+            bg,
+            components::source_rect::from_texture(texture));
+    registry.assign<components::destination_rect>(bg);
+    registry.assign<components::image>(bg, texture);
+
+    return bg;
+}
+
 entt::entity create_camera(const components::position position,
 			   entt::registry& registry)
 {
@@ -146,7 +162,6 @@ void main_loop(SDL_Window* window, const int scale)
     Resources::load("resources/images/bullet.png", renderer);
     Resources::load("resources/images/bullet-enemy.png", renderer);
 
-    SDL_Texture* background = Resources::get("resources/images/background.png");
 
     entt::registry registry;
 
@@ -160,8 +175,10 @@ void main_loop(SDL_Window* window, const int scale)
     create_boss_entity(320.f, 50.f, player, registry);
     create_random_enemies(1300.f, enemy_animations, registry);
 
+    create_background(registry);
+
     SDL_Rect screen_rect = {0, 0, AREA_WIDTH, AREA_HEIGHT};
-    auto camera = create_camera({0, 1200}, registry);
+    auto camera = create_camera({0, 1200 - 480}, registry);
 
     while( !quit )
     {
@@ -202,9 +219,6 @@ void main_loop(SDL_Window* window, const int scale)
 
         //Clear screen
         SDL_RenderClear( renderer );
-
-        //Render texture to screen
-        SDL_RenderCopy( renderer, background, NULL, NULL );
 
         render_sprites(renderer, scale, registry);
 
