@@ -175,7 +175,7 @@ void main_loop(SDL_Window* window, const int scale)
     create_boss_entity(320.f, 50.f, player, registry);
     create_random_enemies(1300.f, enemy_animations, registry);
 
-    create_background(registry);
+    auto background = create_background(registry);
 
     SDL_Rect screen_rect = {0, 0, AREA_WIDTH, AREA_HEIGHT};
     auto camera = create_camera({0, 1200 - 480}, registry);
@@ -220,7 +220,7 @@ void main_loop(SDL_Window* window, const int scale)
         //Clear screen
         SDL_RenderClear( renderer );
 
-        render_sprites(renderer, scale, registry);
+        render_sprites(renderer, scale, background, registry);
 
         //Update screen
         SDL_RenderPresent( renderer );

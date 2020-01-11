@@ -237,16 +237,39 @@ void resolve_collisions(entt::registry& registry)
     }
 }
 
+void render_background(SDL_Renderer* renderer,
+		       const int scale,
+		       entt::entity& background,
+		       entt::registry& registry)
+{
+    auto &image = registry.get<components::image>(background);
+    auto &frame = registry.get<components::source_rect>(background);
+    auto &dest = registry.get<components::destination_rect>(background);
+    const SDL_Rect scaled {
+	dest.rect.x * scale, dest.rect.y * scale,
+	dest.rect.w * scale, dest.rect.h * scale,
+    };
+
+    SDL_RenderCopy(
+	renderer, image.texture,
+	&frame.rect, &scaled);
+}
+
 void render_sprites(SDL_Renderer* renderer,
 		    const int scale,
+		    entt::entity& background,
 		    entt::registry& registry)
 {
+    render_background(renderer, scale, background, registry);
+
     auto view = registry.view<
         components::image,
         components::source_rect,
         components::destination_rect>();
 
     for(auto entity: view) {
+	if(entity == background) continue;
+
         auto &image = view.get<components::image>(entity);
         auto &frame = view.get<components::source_rect>(entity);
         auto &dest = view.get<components::destination_rect>(entity);
