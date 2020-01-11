@@ -13,6 +13,7 @@ namespace components
     {
         float x;
         float y;
+	bool global = false;
     };
 
     struct velocity
@@ -196,11 +197,7 @@ namespace components
 	const bool timed_out() const { return timeout <= 0.f; }
     };
 
-    struct viewport
-    {
-	SDL_Rect rect;
-	SDL_Rect bounds;
-    };
+    struct world_position {};
 } //components
 
 

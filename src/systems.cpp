@@ -123,6 +123,24 @@ void update_destination_rect(entt::registry& registry)
     }
 }
 
+void apply_camera_transformation(const entt::entity& camera,
+				 entt::registry& registry)
+{
+    auto view = registry.view<
+        components::world_position,
+        components::destination_rect>();
+    auto &camera_pos = registry.get<components::position>(camera);
+
+    if(camera_pos.y < 0) camera_pos.y = 0;
+
+    for(auto entity: view) {
+        auto &dest = view.get<components::destination_rect>(entity);
+
+	dest.rect.x -= camera_pos.x;
+	dest.rect.y -= camera_pos.y;
+    }
+}
+
 void update_shot_to_target_behaviour(
     const SDL_Rect& boundaries,
     entt::registry& registry)

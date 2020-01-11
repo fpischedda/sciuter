@@ -19,6 +19,8 @@ SDL_Rect center_position(const int x, const int y, const SDL_Rect& frame_rect);
 void update_animations(const float dt, entt::registry &registry);
 void update_linear_velocity(const float dt, entt::registry& registry);
 void update_destination_rect(entt::registry& registry);
+void apply_camera_transformation(const entt::entity& camera,
+				 entt::registry& registry);
 void update_shot_to_target_behaviour(
     const SDL_Rect& boundaries,
     entt::registry& registry);

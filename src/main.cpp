@@ -3,6 +3,7 @@
  * Implementing a shmup to have fun while I experiment
  */
 #include <iostream>
+#include <random>
 #include <string>
 #include <sciuter/sdl.hpp>
 #include <sciuter/components.hpp>
@@ -59,6 +60,7 @@ entt::entity create_enemy_entity(
 
     auto enemy = registry.create();
     registry.assign<components::position>(enemy, x, y);
+    registry.assign<components::world_position>(enemy);
     registry.assign<components::source_rect>(enemy);
     registry.assign<components::destination_rect>(enemy);
     registry.assign<components::energy>(enemy, 100);
@@ -77,8 +79,9 @@ entt::entity create_boss_entity(
 {
     auto texture = Resources::get("resources/images/boss.png");
     auto enemy = registry.create();
-    registry.assign<components::position>(enemy, x, y);
+    registry.assign<components::position>(enemy, x, y, true);
     registry.assign<components::velocity>(enemy, 0.f, 0.f, 50.f);
+    registry.assign<components::world_position>(enemy);
     registry.assign<components::source_rect>(
             enemy,
             components::source_rect::from_texture(texture));
@@ -91,15 +94,35 @@ entt::entity create_boss_entity(
     return enemy;
 }
 
-entt::entity create_camera(const SDL_Rect& viewport,
-			   const SDL_Rect& bounds,
+void create_random_enemies(const float end_y,
+			   AnimationMap& animations,
 			   entt::registry& registry)
 {
-    entt::entity camera = registry.create();
+    std::random_device rd;
+    std::mt19937 rand_engine(rd());
+    std::uniform_real_distribution<> dist_x(0.f, 640.f);
+    std::uniform_real_distribution<> dist_y(30.f, 100.f);
+
+    float y = 100;
+
+    while(y < end_y)
+    {
+	int x = dist_x(rand_engine);
+	create_enemy_entity(x, y, animations, registry);
+	y += dist_y(rand_engine);
+    }
+}
+
+entt::entity create_camera(const components::position position,
+			   entt::registry& registry)
+{
+    auto camera = registry.create();
+    registry.assign<components::position>(camera, position);
+    registry.assign<components::velocity>(camera, 0.f, -1.f, 30.f);
     return camera;
 }
 
-void main_loop(SDL_Window* window, const int fixed_scale)
+void main_loop(SDL_Window* window, const int scale)
 {
     unsigned int old_time = SDL_GetTicks();
     bool quit = false;
@@ -133,14 +156,13 @@ void main_loop(SDL_Window* window, const int fixed_scale)
 
     AnimationMap enemy_animations = TexturePackerAnimationLoader::load(
             "resources/images/ufo.json");
-    create_enemy_entity(200.f, 50.f, enemy_animations, registry);
-    create_enemy_entity(300.f, 100.f, enemy_animations, registry);
-    create_enemy_entity(100.f, 180.f, enemy_animations, registry);
-    create_enemy_entity(500.f, 80.f, enemy_animations, registry);
 
-    create_boss_entity(320.f, 200.f, player, registry);
+    create_boss_entity(320.f, 50.f, player, registry);
+    create_random_enemies(1300.f, enemy_animations, registry);
 
     SDL_Rect screen_rect = {0, 0, AREA_WIDTH, AREA_HEIGHT};
+    auto camera = create_camera({0, 1200}, registry);
+
     while( !quit )
     {
         while( SDL_PollEvent( &e ) != 0 )
@@ -167,13 +189,13 @@ void main_loop(SDL_Window* window, const int fixed_scale)
         float dt = (now_time - old_time) * 0.001f;
         old_time = now_time;
 
-
 	update_timers(dt, registry);
         handle_gamepad(screen_rect, registry);
 
         update_animations(dt, registry);
         update_linear_velocity(dt, registry);
         update_destination_rect(registry);
+        apply_camera_transformation(camera, registry);
         resolve_collisions(registry);
         check_boundaries(registry);
         update_shot_to_target_behaviour(screen_rect, registry);
@@ -184,7 +206,7 @@ void main_loop(SDL_Window* window, const int fixed_scale)
         //Render texture to screen
         SDL_RenderCopy( renderer, background, NULL, NULL );
 
-        render_sprites(renderer, fixed_scale, registry);
+        render_sprites(renderer, scale, registry);
 
         //Update screen
         SDL_RenderPresent( renderer );
