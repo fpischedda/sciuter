@@ -48,6 +48,7 @@ entt::entity create_player_entity(
     registry.assign<components::gamepad>(
             entity,
             key_map);
+    registry.assign<components::draw_order>(entity, 2);
 
     return entity;
 }
@@ -69,6 +70,7 @@ entt::entity create_enemy_entity(
     registry.assign<components::image>(
             enemy,
             Resources::get("resources/images/ufo.png"));
+    registry.assign<components::draw_order>(enemy, 1);
     return enemy;
 }
 
@@ -91,6 +93,7 @@ entt::entity create_boss_entity(
     registry.assign<components::target>(enemy, target);
     registry.assign<components::image>(enemy, texture);
     registry.assign<components::collision_mask>(enemy, COLLISION_MASK_ENEMIES);
+    registry.assign<components::draw_order>(enemy, 1);
     return enemy;
 }
 
@@ -125,6 +128,7 @@ entt::entity create_background(entt::registry& registry)
             components::source_rect::from_texture(texture));
     registry.assign<components::destination_rect>(bg);
     registry.assign<components::image>(bg, texture);
+    registry.assign<components::draw_order>(bg, 0);
 
     return bg;
 }
@@ -175,7 +179,7 @@ void main_loop(SDL_Window* window, const int scale)
     create_boss_entity(320.f, 50.f, player, registry);
     create_random_enemies(1300.f, enemy_animations, registry);
 
-    auto background = create_background(registry);
+    create_background(registry);
 
     SDL_Rect screen_rect = {0, 0, AREA_WIDTH, AREA_HEIGHT};
     auto camera = create_camera({0, 1200 - 480}, registry);
@@ -220,7 +224,7 @@ void main_loop(SDL_Window* window, const int scale)
         //Clear screen
         SDL_RenderClear( renderer );
 
-        render_sprites(renderer, scale, background, registry);
+        render_sprites(renderer, scale, registry);
 
         //Update screen
         SDL_RenderPresent( renderer );

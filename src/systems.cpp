@@ -237,39 +237,33 @@ void resolve_collisions(entt::registry& registry)
     }
 }
 
-void render_entity(SDL_Renderer* renderer,
-		   const int scale,
-		   entt::entity& entity,
-		   entt::registry& registry)
-{
-    auto &image = registry.get<components::image>(entity);
-    auto &frame = registry.get<components::source_rect>(entity);
-    auto &dest = registry.get<components::destination_rect>(entity);
-    const SDL_Rect scaled {
-	dest.rect.x * scale, dest.rect.y * scale,
-	dest.rect.w * scale, dest.rect.h * scale,
-    };
-
-    SDL_RenderCopy(
-	renderer, image.texture,
-	&frame.rect, &scaled);
-}
-
 void render_sprites(SDL_Renderer* renderer,
 		    const int scale,
-		    entt::entity& background,
 		    entt::registry& registry)
 {
-    render_entity(renderer, scale, background, registry);
-
-    auto view = registry.view<
+    auto group = registry.group<
+	components::draw_order,
         components::image,
         components::source_rect,
         components::destination_rect>();
 
-    for(auto entity: view) {
-	if(entity == background) continue;
-	render_entity(renderer, scale, entity, registry);
+    group.sort<components::draw_order>([](const components::draw_order a,
+					  const components::draw_order b) {
+	return a < b;
+    });
+
+    for(auto entity: group) {
+	auto &image = group.get<components::image>(entity);
+	auto &frame = group.get<components::source_rect>(entity);
+	auto &dest = group.get<components::destination_rect>(entity);
+	const SDL_Rect scaled {
+	    dest.rect.x * scale, dest.rect.y * scale,
+	    dest.rect.w * scale, dest.rect.h * scale,
+	};
+
+	SDL_RenderCopy(
+	    renderer, image.texture,
+	    &frame.rect, &scaled);
     }
 }
 
@@ -297,5 +291,6 @@ entt::entity spawn_bullet(
     registry.assign<components::damage>(bullet, 10);
     registry.assign<components::collision_mask>(bullet, collision_mask);
     registry.assign<components::image>(bullet, texture);
+    registry.assign<components::draw_order>(bullet, 1);
     return bullet;
 }

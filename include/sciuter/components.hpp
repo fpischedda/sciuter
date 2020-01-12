@@ -198,6 +198,8 @@ namespace components
     };
 
     struct world_position {};
+
+    using draw_order = int;
 } //components
 
 
