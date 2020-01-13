@@ -222,6 +222,8 @@ void resolve_collisions(entt::registry& registry)
 	    auto &target_rect = view_targets.get<components::destination_rect>(target);
             auto &energy = view_targets.get<components::energy>(target);
 
+	    if(!registry.valid(bullet) || !registry.valid(target)) continue;
+
             if((bullet_mask.value & target_mask.value) != 0 &&
 	       SDL_HasIntersection(&bullet_rect.rect, &target_rect.rect))
             {
