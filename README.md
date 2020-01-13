@@ -12,9 +12,9 @@ $ mkdir build && cd build
 $ cmake ..
 $ make
 
-## Redo
+## [Redo](https://redo.readthedocs.io/en/latest/)
 
-I am using [this]() implementation on OSX and [this one]() on Linux
+I am using [this](https://redo.readthedocs.io/en/latest/) implementation on OSX and [this one](https://github.com/gyepisam/redux) on Linux
 
 OSX:
 $ redo
