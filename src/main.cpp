@@ -2,7 +2,6 @@
  * Testing EnTT ECS library using SDL2 as the media library
  * Implementing a shmup to have fun while I experiment
  */
-#include <iostream>
 #include <random>
 #include <string>
 #include <sciuter/sdl.hpp>
@@ -152,7 +151,7 @@ void main_loop(SDL_Window* window, const int scale)
     SDL_Renderer* renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED );
     if( renderer == NULL )
     {
-        cout << "Renderer could not be created! SDL Error: " << SDL_GetError() << endl;
+        SDL_Log("Renderer could not be created! SDL Error: %s", SDL_GetError());
         return;
     }
 
@@ -249,8 +248,6 @@ int main( int argc, char* args[] )
 	SDL_Log("SDL_GetDesktopDisplayMode failed: %s", SDL_GetError());
 	return 1;
     }
-
-    cout << "width: " << dm.w << " height: " << dm.h;
 
     int scale = dm.w / AREA_WIDTH;
 
