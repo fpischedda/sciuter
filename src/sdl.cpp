@@ -52,7 +52,7 @@ SDL_Surface* optimize_surface(SDL_Surface* surface, const SDL_PixelFormat* forma
     SDL_Surface* optimized = SDL_ConvertSurface( surface, format, 0 );
     if( nullptr == optimized)
     {
-        SDL_Log("Unable to optimize surface! SDL Error: %", SDL_GetError());
+        SDL_Log("Unable to optimize surface! SDL Error: %s", SDL_GetError());
     }
 
     return optimized;
@@ -65,7 +65,7 @@ SDL_Surface* load_surface(const std::string& path, const SDL_PixelFormat* format
     if( nullptr == surface)
     {
         SDL_Log("Unable to load image %s! SDL_image Error: %s",
-		path,
+		path.c_str(),
 	        IMG_GetError());
     }
 
@@ -89,7 +89,7 @@ SDL_Texture* load_texture( const std::string path, SDL_Renderer* renderer )
     if( nullptr == surface )
     {
         SDL_Log("Unable to load image %s! SDL_image Error: %s",
-		path,
+		path.c_str(),
 		IMG_GetError());
     }
     else
@@ -99,7 +99,7 @@ SDL_Texture* load_texture( const std::string path, SDL_Renderer* renderer )
         if( nullptr == texture )
         {
             SDL_Log("Unable to create texture from %s! SDL Error: %s",
-		    path,
+		    path.c_str(),
 		    SDL_GetError());
         }
 
