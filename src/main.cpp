@@ -16,6 +16,42 @@ const int AREA_HEIGHT = 480;
 
 using namespace std;
 
+class BossBehavior : public components::IEntityBehavior {
+public:
+    virtual const bool has_finished() const {return false;}
+    virtual void update(const float dt, entt::entity &entity,
+                        entt::registry &registry) {
+	auto& position = registry.get<components::position>(entity);
+	auto& direction = registry.get<components::velocity>(entity);
+
+        if (direction.dx < 0 && position.x < 100) {
+          direction.dx = -direction.dx;
+        }
+
+        if (direction.dx > 0 && position.x > 540) {
+          direction.dx = -direction.dx;
+        }
+    }
+};
+
+class EnemySpawnerBehavior : components::IEntityBehavior {
+private:
+    int enemy_count;
+    float delay;
+    entt::entity camera;
+public:
+  EnemySpawnerBehavior(const int enemy_count_,
+		       const float delay_,
+                       const entt::entity &camera_) {
+      enemy_count = enemy_count_;
+      delay = delay_;
+      camera = camera_;
+  }
+  virtual const bool has_finished() const { return true; }
+  virtual void update(const float dt, entt::entity &entity,
+                      entt::registry &registry) {}
+};
+
 entt::entity create_player_entity(
         AnimationMap& animations,
         entt::registry& registry)
@@ -60,6 +96,7 @@ entt::entity create_enemy_entity(
 
     auto enemy = registry.create();
     registry.assign<components::position>(enemy, x, y);
+    registry.assign<components::velocity>(enemy, 1.f, 0.f, 50.f);
     registry.assign<components::world_position>(enemy);
     registry.assign<components::source_rect>(enemy);
     registry.assign<components::destination_rect>(enemy);
@@ -70,30 +107,29 @@ entt::entity create_enemy_entity(
             enemy,
             Resources::get("resources/images/ufo.png"));
     registry.assign<components::draw_order>(enemy, 1);
+    registry.assign<components::entity_behavior>(enemy, new BossBehavior());
     return enemy;
 }
 
-entt::entity create_boss_entity(
-        const float x, const float y,
-	entt::entity& target,
-        entt::registry& registry)
-{
-    auto texture = Resources::get("resources/images/boss.png");
-    auto enemy = registry.create();
-    registry.assign<components::position>(enemy, x, y, true);
-    registry.assign<components::velocity>(enemy, 0.f, 0.f, 50.f);
-    registry.assign<components::world_position>(enemy);
-    registry.assign<components::source_rect>(
-            enemy,
-            components::source_rect::from_texture(texture));
-    registry.assign<components::destination_rect>(enemy);
-    registry.assign<components::energy>(enemy, 300);
-    registry.assign<components::timer>(enemy, 0.5f);
-    registry.assign<components::target>(enemy, target);
-    registry.assign<components::image>(enemy, texture);
-    registry.assign<components::collision_mask>(enemy, COLLISION_MASK_ENEMIES);
-    registry.assign<components::draw_order>(enemy, 1);
-    return enemy;
+entt::entity create_boss_entity(const float x, const float y,
+                                  entt::entity &target,
+                                  entt::registry &registry) {
+  auto texture = Resources::get("resources/images/boss.png");
+  auto enemy = registry.create();
+  registry.assign<components::position>(enemy, x, y, true);
+  registry.assign<components::velocity>(enemy, 1.f, 0.f, 50.f);
+  registry.assign<components::world_position>(enemy);
+  registry.assign<components::source_rect>(
+      enemy, components::source_rect::from_texture(texture));
+  registry.assign<components::destination_rect>(enemy);
+  registry.assign<components::energy>(enemy, 300);
+  registry.assign<components::timer>(enemy, 0.5f);
+  registry.assign<components::target>(enemy, target);
+  registry.assign<components::image>(enemy, texture);
+  registry.assign<components::collision_mask>(enemy, COLLISION_MASK_ENEMIES);
+  registry.assign<components::draw_order>(enemy, 1);
+  registry.assign<components::entity_behavior>(enemy, new BossBehavior());
+  return enemy;
 }
 
 void create_random_enemies(const float end_y,
@@ -164,6 +200,7 @@ void main_loop(SDL_Window* window, const int scale)
     Resources::load("resources/images/boss.png", renderer);
     Resources::load("resources/images/bullet.png", renderer);
     Resources::load("resources/images/bullet-enemy.png", renderer);
+    Resources::load("resources/images/bullet-enemy-small.png", renderer);
 
 
     entt::registry registry;
@@ -211,6 +248,7 @@ void main_loop(SDL_Window* window, const int scale)
 
 	update_timers(dt, registry);
         handle_gamepad(screen_rect, registry);
+	update_behaviors(dt, registry);
 
         update_animations(dt, registry);
         update_linear_velocity(dt, registry);

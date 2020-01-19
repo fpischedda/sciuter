@@ -296,3 +296,19 @@ entt::entity spawn_bullet(
     registry.assign<components::draw_order>(bullet, 1);
     return bullet;
 }
+
+void update_behaviors(const float dt, entt::registry &registry)
+{
+    auto view = registry.view<
+        components::entity_behavior>();
+
+    for (auto entity : view) {
+      auto &behavior = view.get<components::entity_behavior>(entity);
+
+      behavior->update(dt, entity, registry);
+
+      if (behavior->has_finished()) {
+	  // registry.destroy(entity);
+      }
+    }
+}

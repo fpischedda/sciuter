@@ -37,4 +37,6 @@ entt::entity spawn_bullet(
     const SDL_Rect& boundaries,
     entt::registry& registry);
 
+void update_behaviors(const float dt, entt::registry &registry);
+
 #endif
