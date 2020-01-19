@@ -3,6 +3,7 @@
 
 #include <map>
 #include <math.h>
+#include <memory>
 #include <vector>
 #include <entt/entt.hpp>
 #include <sciuter/animation.hpp>
@@ -200,6 +201,16 @@ namespace components
     struct world_position {};
 
     using draw_order = int;
+
+    class IEntityBehavior {
+    public:
+	virtual ~IEntityBehavior() = default;
+	virtual const bool has_finished() const = 0;
+	virtual void update(const float dt, entt::entity &entity,
+			    entt::registry &registry) = 0;
+    };
+
+    typedef std::shared_ptr<IEntityBehavior> entity_behavior;
 } //components
 
 
