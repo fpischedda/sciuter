@@ -49,7 +49,15 @@ public:
   }
   virtual const bool has_finished() const { return true; }
   virtual void update(const float dt, entt::entity &entity,
-                      entt::registry &registry) {}
+                      entt::registry &registry) {
+      if(enemy_count < 0) return;
+
+      enemy_count -= 1;
+
+      auto position = registry<components::position>.get(entity);
+      auto enemy = registry.create();
+      registry.assign<components::position>(enemy, position);
+  }
 };
 
 entt::entity create_player_entity(
