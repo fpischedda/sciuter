@@ -54,7 +54,7 @@ public:
 
       enemy_count -= 1;
 
-      auto position = registry<components::position>.get(entity);
+      auto position = registry.get<components::position>(entity);
       auto enemy = registry.create();
       registry.assign<components::position>(enemy, position);
   }
