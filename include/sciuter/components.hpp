@@ -40,13 +40,13 @@ namespace components
         int frame_index;
         float frame_time;
         float next_frame_time;
-        Animation* animation_data;
+        Animation animation_data;
         float speed;
 
-        animation(Animation* _animation, const float _speed)
+        animation(const Animation& _animation, const float _speed)
             : frame_index(0), animation_data(_animation), speed(_speed)
         {
-            frame_time = _speed / _animation->get_frame_count();
+            frame_time = _speed / _animation.get_frame_count();
             next_frame_time = frame_time;
         }
 
@@ -57,7 +57,7 @@ namespace components
             if(next_frame_time <= 0.f)
             {
                 frame_index += 1;
-                if(frame_index >= animation_data->get_frame_count())
+                if(frame_index >= animation_data.get_frame_count())
                 {
                     frame_index = 0;
                 }
@@ -67,7 +67,7 @@ namespace components
 
         const SDL_Rect& get_current_frame()
         {
-            return animation_data->get_frames()[frame_index];
+            return animation_data.get_frames()[frame_index];
         };
     };
 
