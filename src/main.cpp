@@ -84,17 +84,16 @@ entt::entity create_player_entity(
     };
 
     const AnimationMap& animations = Resources::get_animations("player-animations"_hs)->value;
-    const Animation anim{animations.at("player")};
 
     auto entity = registry.create();
     registry.assign<components::position>(entity, 100.f, 300.f);
     registry.assign<components::velocity>(entity, 0.f, 0.f, 150.f);
     registry.assign<components::source_rect>(entity);
     registry.assign<components::destination_rect>(entity);
-    registry.assign<components::animation>(entity, anim, .6f);
+    registry.assign<components::animation>(entity, animations.at("player"), .6f);
     registry.assign<components::image>(
             entity,
-            Resources::get("resources/images/player.png"));
+            Resources::get_texture("player"_hs)->value);
     registry.assign<components::timer>(entity, 0.05);
     registry.assign<components::energy>(entity, 100000);
     registry.assign<components::collision_mask>(entity, COLLISION_MASK_PLAYER);
@@ -108,9 +107,10 @@ entt::entity create_player_entity(
 
 entt::entity create_enemy_entity(
         const float x, const float y,
-        const Animation& ufo_animation,
         entt::registry& registry)
 {
+    const AnimationMap& animations = Resources::get_animations("ufo-animations"_hs)->value;
+
     auto enemy = registry.create();
     registry.assign<components::position>(enemy, x, y);
     registry.assign<components::velocity>(enemy, 1.f, 0.f, 50.f);
@@ -118,11 +118,11 @@ entt::entity create_enemy_entity(
     registry.assign<components::source_rect>(enemy);
     registry.assign<components::destination_rect>(enemy);
     registry.assign<components::energy>(enemy, 100);
-    registry.assign<components::animation>(enemy, ufo_animation, .5f);
+    registry.assign<components::animation>(enemy, animations.at("ufo"), .5f);
     registry.assign<components::collision_mask>(enemy, COLLISION_MASK_ENEMIES);
     registry.assign<components::image>(
             enemy,
-            Resources::get("resources/images/ufo.png"));
+            Resources::get_texture("ufo"_hs)->value);
     registry.assign<components::draw_order>(enemy, 1);
     registry.assign<components::entity_behavior>(enemy, new BossBehavior());
     return enemy;
@@ -131,7 +131,7 @@ entt::entity create_enemy_entity(
 entt::entity create_boss_entity(const float x, const float y,
                                   entt::entity &target,
                                   entt::registry &registry) {
-  auto texture = Resources::get("resources/images/boss.png");
+  auto texture = Resources::get_texture("boss"_hs)->value;
   auto enemy = registry.create();
   registry.assign<components::position>(enemy, x, y, true);
   registry.assign<components::velocity>(enemy, 1.f, 0.f, 50.f);
@@ -157,14 +157,12 @@ void create_random_enemies(const float end_y,
     std::uniform_real_distribution<> dist_x(0.f, 640.f);
     std::uniform_real_distribution<> dist_y(30.f, 100.f);
 
-    const AnimationMap& animations = Resources::get_animations("ufo-animations"_hs)->value;
-
     float y = 100;
 
     while(y < end_y)
     {
 	int x = dist_x(rand_engine);
-	create_enemy_entity(x, y, animations.at("ufo"), registry);
+	create_enemy_entity(x, y, registry);
 	y += dist_y(rand_engine);
     }
 }
@@ -195,6 +193,26 @@ entt::entity create_camera(const components::position position,
     return camera;
 }
 
+void load_resources(SDL_Renderer* renderer)
+{
+
+    Resources::load_texture(
+	"background"_hs,
+	"resources/images/background.png",
+	renderer);
+    Resources::load_texture("player"_hs, "resources/images/player.png", renderer);
+    Resources::load_texture("ufo"_hs, "resources/images/ufo.png", renderer);
+    Resources::load_texture("boss"_hs, "resources/images/boss.png", renderer);
+    Resources::load_texture("bullet"_hs, "resources/images/bullet.png", renderer);
+    Resources::load_texture("bullet-enemy"_hs, "resources/images/bullet-enemy.png", renderer);
+    Resources::load_texture("bullet-enemy-small"_hs, "resources/images/bullet-enemy-small.png", renderer);
+
+    Resources::load_animations("player-animations"_hs,
+			       "resources/images/player.json");
+    Resources::load_animations("ufo-animations"_hs,
+			       "resources/images/ufo.json");
+}
+
 void main_loop(SDL_Window* window, const int scale)
 {
     unsigned int old_time = SDL_GetTicks();
@@ -209,28 +227,14 @@ void main_loop(SDL_Window* window, const int scale)
         return;
     }
 
+    load_resources(renderer);
+
     //Initialize renderer color
     SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
 
     // Resources::load("resources/images/background.png", renderer);
-    Resources::load_texture(
-	"background"_hs,
-	"resources/images/background.png",
-	renderer);
-    Resources::load("resources/images/player.png", renderer);
-    Resources::load("resources/images/ufo.png", renderer);
-    Resources::load("resources/images/boss.png", renderer);
-    Resources::load("resources/images/bullet.png", renderer);
-    Resources::load("resources/images/bullet-enemy.png", renderer);
-    Resources::load("resources/images/bullet-enemy-small.png", renderer);
-
-
     entt::registry registry;
 
-    Resources::load_animations("player-animations"_hs,
-			       "resources/images/player.json");
-    Resources::load_animations("ufo-animations"_hs,
-			       "resources/images/ufo.json");
     auto player = create_player_entity(registry);
 
     create_boss_entity(320.f, 50.f, player, registry);

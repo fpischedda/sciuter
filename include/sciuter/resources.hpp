@@ -54,21 +54,6 @@ private:
 
     Resources() { }
 
-    SDL_Texture* _load(const std::string path, SDL_Renderer* renderer)
-	{
-	    auto texture = ::load_texture(path, renderer);
-	    if( nullptr != texture )
-	    {
-		m_resources[path] = texture;
-	    }
-	    return texture;
-	}
-
-    SDL_Texture* _get(const std::string path)
-	{
-	    return m_resources[path];
-	}
-
     const entt::handle<texture_resource> _load_texture(
 	const std::string path, SDL_Renderer* renderer) {
 	return _load_texture(entt::hashed_string::to_value(path.c_str()),
@@ -140,17 +125,5 @@ public:
 	texture_id_type id) {
 	return s_instance._get_texture(id);
     }
-
-    static SDL_Texture* load(const std::string path, SDL_Renderer* renderer)
-	{
-	    auto& instance = get_instance();
-	    return instance._load(path, renderer);
-	}
-
-    static SDL_Texture* get(const std::string path)
-	{
-	    auto& instance = get_instance();
-	    return instance._get(path);
-	}
 };
 #endif
