@@ -119,7 +119,7 @@ void update_destination_rect(entt::registry& registry)
         auto &frame_rect = view.get<components::source_rect>(entity);
         auto &dest = view.get<components::destination_rect>(entity);
 
-        dest.rect = center_position(position.x, position.y, frame_rect.rect);
+        dest = center_position(position.x, position.y, frame_rect.rect);
     }
 }
 
@@ -136,8 +136,8 @@ void apply_camera_transformation(const entt::entity& camera,
     for(auto entity: view) {
         auto &dest = view.get<components::destination_rect>(entity);
 
-	dest.rect.x -= camera_pos.x;
-	dest.rect.y -= camera_pos.y;
+	dest.x -= camera_pos.x;
+	dest.y -= camera_pos.y;
     }
 }
 
@@ -157,12 +157,12 @@ void update_shot_to_target_behaviour(
 	auto &target_pos = registry.get<components::destination_rect>(target.entity);
 
 	if(timer.timed_out() &&
-	   target_pos.rect.x < dest.rect.x + dest.rect.w &&
-	   target_pos.rect.x + target_pos.rect.w > dest.rect.x)
+	   target_pos.x < dest.x + dest.w &&
+	   target_pos.x + target_pos.w > dest.x)
 	{
 	    const components::position& position = {
-		(float)(dest.rect.x + dest.rect.w / 2),
-		(float)(dest.rect.y + dest.rect.h)
+		(float)(dest.x + dest.w / 2),
+		(float)(dest.y + dest.h)
 	    };
 	    components::velocity velocities[] = {
 		{0.f, 1.f, 90.f},
@@ -194,7 +194,7 @@ void check_boundaries(entt::registry& registry)
         auto &dest_rect = view.get<components::destination_rect>(entity);
         auto &boundaries = view.get<components::screen_boundaries>(entity);
 
-        if(!SDL_HasIntersection(&dest_rect.rect, &boundaries.rect))
+        if(!SDL_HasIntersection(&dest_rect, &boundaries.rect))
         {
             registry.destroy(entity);
         }
@@ -225,7 +225,7 @@ void resolve_collisions(entt::registry& registry)
 	    if(!registry.valid(bullet) || !registry.valid(target)) continue;
 
             if((bullet_mask.value & target_mask.value) != 0 &&
-	       SDL_HasIntersection(&bullet_rect.rect, &target_rect.rect))
+	       SDL_HasIntersection(&bullet_rect, &target_rect))
             {
                 registry.destroy(bullet);
                 energy.value -= damage.value;
@@ -259,8 +259,8 @@ void render_sprites(SDL_Renderer* renderer,
 	auto &frame = group.get<components::source_rect>(entity);
 	auto &dest = group.get<components::destination_rect>(entity);
 	const SDL_Rect scaled {
-	    dest.rect.x * scale, dest.rect.y * scale,
-	    dest.rect.w * scale, dest.rect.h * scale,
+	    dest.x * scale, dest.y * scale,
+	    dest.w * scale, dest.h * scale,
 	};
 
 	SDL_RenderCopy(

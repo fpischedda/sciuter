@@ -85,10 +85,7 @@ namespace components
         }
     };
 
-    struct destination_rect
-    {
-        SDL_Rect rect;
-    };
+    using destination_rect = SDL_Rect;
 
     struct screen_boundaries
     {
