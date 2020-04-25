@@ -3,3 +3,5 @@
 .redo
 ./build/
 .ccls-cache
+/build/
+/bin/
