@@ -43,7 +43,8 @@ entt::entity create_player_entity(
     registry.assign<components::image>(
             entity,
             Resources::get_texture("player"_hs)->value);
-    registry.assign<components::timer>(entity, 0.05);
+    registry.assign<components::transformation>(entity, 2.f, 0.f);
+    registry.assign<components::timer>(entity, 0.10);
     registry.assign<components::energy>(entity, 100000);
     registry.assign<components::collision_mask>(entity, COLLISION_MASK_PLAYER);
     registry.assign<components::gamepad>(
@@ -88,7 +89,7 @@ entt::entity create_boss_entity(const float x, const float y,
   registry.assign<components::source_rect>(
       enemy, components::source_rect::from_texture(texture));
   registry.assign<components::destination_rect>(enemy);
-  registry.assign<components::energy>(enemy, 300);
+  registry.assign<components::energy>(enemy, 1000);
   registry.assign<components::timer>(enemy, 0.5f);
   registry.assign<components::target>(enemy, target);
   registry.assign<components::image>(enemy, texture);
@@ -230,6 +231,7 @@ void main_loop(SDL_Window* window, const int scale)
         resolve_collisions(registry);
         check_boundaries(registry);
         update_shot_to_target_behaviour(screen_rect, registry);
+        update_transformations(registry);
 
         //Clear screen
         SDL_RenderClear( renderer );

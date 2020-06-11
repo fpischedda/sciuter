@@ -312,3 +312,21 @@ void update_behaviors(const float dt, entt::registry &registry)
       }
     }
 }
+
+void update_transformations(entt::registry &registry)
+{
+    auto view = registry.view<
+	components::destination_rect,
+        components::transformation>();
+
+    for (auto entity : view) {
+      auto &dest = view.get<components::destination_rect>(entity);
+      auto &trans = view.get<components::transformation>(entity);
+
+      dest.x *= trans.scale;
+      dest.y *= trans.scale;
+      dest.w *= trans.scale;
+      dest.h *= trans.scale;
+    }
+
+}

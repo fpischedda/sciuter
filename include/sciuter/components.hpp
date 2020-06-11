@@ -208,6 +208,13 @@ namespace components
     };
 
     typedef std::shared_ptr<IEntityBehavior> entity_behavior;
+
+    // trying to have an high level concept of transformation
+    // that can be applied to an entity
+    struct transformation {
+	float scale = 1.f;
+	float rotation = .0f;
+    };
 } //components
 
 

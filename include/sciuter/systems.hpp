@@ -38,5 +38,6 @@ entt::entity spawn_bullet(
     entt::registry& registry);
 
 void update_behaviors(const float dt, entt::registry &registry);
+void update_transformations(entt::registry &registry);
 
 #endif
